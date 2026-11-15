@@ -1,401 +1,342 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pokepeace 跨團總對帳與出貨整合工具</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Fredoka:wght@400;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            pika: {
-              bg: '#FFFDF2',
-              card: '#FFFFFF',
-              nav: '#FFEAEB',
-              navBorder: '#FFC1C5',
-              border: '#FFE8C8',
-              accent: '#FF7E67',
-              accentHover: '#FF6B52',
-              yellow: '#FFF3B8',
-              yellowDark: '#F7C948',
-              textMain: '#4A3728',
-              textSub: '#8C7361',
-              pinkBtn: '#FFDEE2',
-              blueTag: '#E0F7FC',
-              blueText: '#0083B0'
-            }
-          },
-          fontFamily: {
-            title: ['Bubblegum Sans', 'Fredoka', 'M PLUS Rounded 1c', 'sans-serif'],
-            body: ['M PLUS Rounded 1c', 'Zen Maru Gothic', 'sans-serif']
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Pika 跨團總對帳中心</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--maca-yellow:#FFF2CC;--pika-brown:#5C4033;--bg-color:#FEF9EF;--btn-active:#F3A05F;--tax-red:#FFADAD;--check-green:#A8D5BA;--deduct-bg:#E8F5E9;--ship-purple:#E1D5E7;}
+*{font-family:'Zen Maru Gothic',sans-serif !important;box-sizing:border-box;-webkit-font-smoothing:antialiased;font-weight:700;}
+body{background:var(--bg-color);color:var(--pika-brown);margin:0;padding-bottom:90px;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
+.top-bar{background:#fff;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--maca-yellow);position:sticky;top:0;z-index:1000;width:100%;max-width:420px;}
+.view-section{width:100%;max-width:420px;display:none;padding:0 10px;}
+.active{display:block;}
+.pika-header{font-size:1.4rem;color:var(--btn-active);text-align:center;margin:15px 0;}
+.panel{background:#fff;padding:15px;border-radius:25px;border:3px solid var(--maca-yellow);margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.05);}
+input,textarea,select,button{width:100%;padding:12px;margin:8px 0;border:2px solid #eee;border-radius:15px;font-size:1rem;outline:none;background:#fff;color:var(--pika-brown);}
+.btn-main{background:var(--btn-active);border-radius:20px;border:none;color:white;cursor:pointer;font-size:1.1rem;margin-top:10px;box-shadow:0 4px 0 #d38446;}
+.btn-main:active{transform:translateY(2px);box-shadow:0 2px 0 #d38446;}
+.group-card{margin-bottom:12px;border-radius:20px;border:2.5px solid var(--maca-yellow);background:#fff;overflow:hidden;}
+.group-header{background:var(--maca-yellow);padding:12px 15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.group-content{display:none;padding:10px;background:#fff;}
+.group-card.open .group-content{display:block;}
+.item-row{display:flex;align-items:center;padding:10px;border-bottom:1px solid #eee;gap:8px;background:#fff;}
+.check-circle{width:24px;height:24px;border-radius:50%;border:2px solid #ddd;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;}
+.is-checked{background:var(--check-green);border-color:var(--check-green);color:white;}
+.ship-circle{width:24px;height:24px;border-radius:50%;border:2px solid #ddd;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.7rem;background:#f3e5f5;color:#8e24aa;}
+.is-shipped{background:#8e24aa;border-color:#8e24aa;color:white;}
+.btn-sm-action{width:auto !important;padding:4px 10px !important;margin:0 !important;border-radius:8px !important;font-size:0.75rem !important;cursor:pointer;border:1.5px solid #ddd !important;background:#f9f9f9 !important;color:#666 !important;}
+.btn-copy{background:#f5f5f5;border:none;padding:6px 12px;border-radius:12px;font-size:0.85rem;color:#666;cursor:pointer;}
+.bottom-nav{position:fixed;bottom:0;width:100%;max-width:420px;background:#fff;display:flex;justify-content:space-around;padding:10px 10px calc(10px + env(safe-area-inset-bottom));border-top:3px solid var(--maca-yellow);z-index:1000;}
+.nav-item{font-size:.8rem;cursor:pointer;text-align:center;color:#aaa;flex:1;}
+.nav-item.active{color:var(--btn-active);}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div style="font-size:0.9rem;font-weight:700;color:var(--pika-brown);">📦 跨團總對帳中心</div>
+  <div style="font-size:0.75rem;color:#aaa;background:#f5f5f5;padding:3px 8px;border-radius:8px;">v3.0</div>
+</div>
+
+<!-- 分頁一：單團明細檢視 -->
+<div id="tab1View" class="view-section active">
+  <h2 class="pika-header">單團明細檢視</h2>
+  <div class="panel">
+    <label style="font-size:0.85rem;color:#666;">選擇要查看的代購團：</label>
+    <select id="selectCampTab1" onchange="renderTab1()" style="margin-top:5px;"></select>
+  </div>
+  <div id="tab1Content"></div>
+</div>
+
+<!-- 分頁二：跨團總對帳與出貨 -->
+<div id="tab2View" class="view-section">
+  <h2 class="pika-header">跨團總對帳與出貨</h2>
+  <div class="panel" style="padding:12px;">
+    <input type="text" id="globalSearch" placeholder="🔍 搜尋買家姓名或商品名稱..." oninput="renderTab2()" style="margin:0;padding:10px;">
+  </div>
+  <div id="tab2Content"></div>
+</div>
+
+<!-- 分頁三：檔案上傳中心 -->
+<div id="tab3View" class="view-section">
+  <h2 class="pika-header">檔案上傳中心</h2>
+  <div class="panel" style="text-align:center;padding:25px 15px;">
+    <div style="font-size:2.5rem;margin-bottom:10px;">📤</div>
+    <div style="font-size:0.9rem;color:#666;margin-bottom:15px;">請上傳各個代購團匯出的 .json 檔案</div>
+    <button class="btn-main" onclick="document.getElementById('jsonFileInput').click()">選擇並上傳 JSON 檔案</button>
+    <input type="file" id="jsonFileInput" accept=".json" multiple style="display:none" onchange="handleFilesUpload(this)">
+  </div>
+  <div class="panel">
+    <div style="font-size:0.9rem;font-weight:700;margin-bottom:10px;">📋 已上傳的代購團列表：</div>
+    <div id="uploadedCampList" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="switchTab('tab1',this)"><div>📋</div><span>單團明細</span></div>
+  <div class="nav-item" onclick="switchTab('tab2',this)"><div>⚖️</div><span>跨團對帳</span></div>
+  <div class="nav-item" onclick="switchTab('tab3',this)"><div>📁</div><span>檔案上傳</span></div>
+</nav>
+
+<script>
+let uploadedGroups = [];
+let buyerStates = {}; // 記錄打包與出貨狀態 { "買家名_團名_商品ID": { packed: true, shipped: false } }
+
+try {
+  const saved = localStorage.getItem('pika_multigroup_data');
+  if(saved) uploadedGroups = JSON.parse(saved);
+  const savedStates = localStorage.getItem('pika_multigroup_states');
+  if(savedStates) buyerStates = JSON.parse(savedStates);
+} catch(e) {
+  uploadedGroups = [];
+}
+
+window.onload = () => {
+  updateCampDropdown();
+  renderTab1();
+  renderTab2();
+  renderUploadedList();
+};
+
+function switchTab(tabId, el){
+  document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+  document.getElementById(tabId + 'View').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(tabId === 'tab1') renderTab1();
+  if(tabId === 'tab2') renderTab2();
+  if(tabId === 'tab3') renderUploadedList();
+}
+
+function handleFilesUpload(input){
+  const files = input.files;
+  if(!files || files.length === 0) return;
+  
+  let loadedCount = 0;
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if(data && data.groupName && Array.isArray(data.items)){
+          // 檢查是否已存在同名團，若有則覆蓋更新
+          const existingIndex = uploadedGroups.findIndex(g => g.groupName === data.groupName);
+          if(existingIndex >= 0) {
+            uploadedGroups[existingIndex] = data;
+          } else {
+            uploadedGroups.push(data);
           }
         }
-      }
-    }
-  </script>
-  <style>
-    body {
-      background-color: #FFFDF2;
-      color: #4A3728;
-      font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif;
-    }
-    .font-title-style {
-      font-family: 'Bubblegum Sans', 'Fredoka', 'M PLUS Rounded 1c', sans-serif;
-    }
-    .pika-shadow {
-      box-shadow: 0 4px 0px #F3D0A8;
-    }
-    .pika-btn-shadow {
-      box-shadow: 0 3px 0px #E59885;
-    }
-    .pika-btn-shadow:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0px #E59885;
-    }
-    .pika-card-border {
-      border: 2px solid #FFE8C8;
-    }
-  </style>
-</head>
-<body class="min-h-screen pb-10">
-
-  <header class="bg-[#FFEAEB] border-b-2 border-[#FFC1C5] sticky top-0 z-50 px-3 py-2.5 shadow-sm">
-    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-xl">⚡</span>
-        <h1 class="text-lg md:text-xl font-bold font-title-style text-[#FF7E67] tracking-wider leading-none">
-          Pokepeace 跨團總對帳
-        </h1>
-      </div>
-      <div class="flex items-center gap-2">
-        <span id="loadedGroupsBadge" class="bg-white text-pika-textMain font-bold text-xs px-2.5 py-1 rounded-xl border border-[#FFC1C5]">
-          尚未匯入檔案
-        </span>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-5xl mx-auto px-3 mt-4 space-y-4">
-
-    <!-- 檔案上傳區 -->
-    <div class="bg-white rounded-2xl p-4 pika-card-border pika-shadow space-y-3">
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#FFE8C8] pb-2.5">
-        <div>
-          <h2 class="text-base md:text-lg font-bold text-pika-textMain flex items-center gap-1.5">
-            <i data-lucide="folder-plus" class="w-5 h-5 text-pika-accent"></i>
-            上傳各團匯出的 .json 檔案
-          </h2>
-          <p class="text-[11px] text-pika-textSub mt-0.5">可一次複選多個檔案（第1團、第2團、第3團），系統會自動依買家姓名合併所有卡片與金額！</p>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <label class="text-xs font-bold text-pika-textSub">單張金額 $</label>
-          <input type="number" id="unitPriceInput" value="55" onchange="renderMergedResult()" class="w-16 px-2 py-1 rounded-lg border-2 border-[#FFE8C8] bg-[#FFFDF2] font-bold text-xs text-center outline-none focus:border-[#FF7E67]">
-        </div>
-      </div>
-
-      <label class="flex flex-col items-center justify-center w-full h-28 border-2 border-[#FFC1C5] border-dashed rounded-2xl cursor-pointer bg-[#FFFDF2] hover:bg-[#FFEAEB]/40 transition-all">
-        <div class="flex flex-col items-center justify-center py-4">
-          <i data-lucide="upload-cloud" class="w-7 h-7 text-pika-accent mb-1"></i>
-          <p class="text-xs sm:text-sm font-bold text-pika-accent">點擊選取多個團的 .json 檔案（可一次全選）</p>
-          <p class="text-[11px] text-pika-textSub mt-0.5">支援同時匯入已分配開卡紀錄與原始喊單明細</p>
-        </div>
-        <input id="fileInput" type="file" accept=".json" multiple class="hidden" onchange="handleFiles(this.files)">
-      </label>
-
-      <div id="groupTagsContainer" class="flex flex-wrap gap-1.5"></div>
-    </div>
-
-    <!-- 篩選與顯示切換 -->
-    <div id="controlBar" class="hidden bg-white rounded-2xl p-3.5 pika-card-border pika-shadow flex flex-wrap items-center justify-between gap-2">
-      <div class="flex items-center gap-1.5 bg-[#FFFDF2] p-1 rounded-xl border border-[#FFE8C8]">
-        <button id="modeAllocatedBtn" onclick="setViewMode('allocated')" class="px-3 py-1 rounded-lg text-xs font-bold bg-[#FF7E67] text-white transition-all">
-          🎉 已分到卡片總覽（出貨用）
-        </button>
-        <button id="modeOrderedBtn" onclick="setViewMode('ordered')" class="px-3 py-1 rounded-lg text-xs font-bold text-pika-textMain hover:bg-[#FFF3B8] transition-all">
-          📝 原始喊單總覽（排單用）
-        </button>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <div class="relative flex items-center">
-          <i data-lucide="search" class="w-3.5 h-3.5 text-pika-textSub absolute left-2 pointer-events-none"></i>
-          <input type="text" id="searchInput" oninput="renderMergedResult()" placeholder="搜尋買家姓名..." class="pl-7 pr-2.5 py-1 text-xs font-bold rounded-lg border border-[#FFE8C8] bg-[#FFFDF2] focus:bg-white focus:border-[#FF7E67] outline-none w-40 sm:w-48">
-        </div>
-        <span id="buyerCountBadge" class="bg-[#FFF3B8] text-pika-textMain font-bold text-xs px-2.5 py-1 rounded-full border border-[#F7C948]">
-          共 0 位
-        </span>
-      </div>
-    </div>
-
-    <!-- 整合結果列表 -->
-    <div id="resultGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-
-  </main>
-
-  <script>
-    let loadedGroups = [];
-    let viewMode = 'allocated';
-    let mergedStates = JSON.parse(localStorage.getItem('poke_merged_states')) || {};
-
-    window.onload = () => {
-      lucide.createIcons();
-    };
-
-    function saveMergedStates() {
-      localStorage.setItem('poke_merged_states', JSON.stringify(mergedStates));
-    }
-
-    function setViewMode(mode) {
-      viewMode = mode;
-      const btnAlloc = document.getElementById('modeAllocatedBtn');
-      const btnOrder = document.getElementById('modeOrderedBtn');
-      if (mode === 'allocated') {
-        btnAlloc.className = "px-3 py-1 rounded-lg text-xs font-bold bg-[#FF7E67] text-white transition-all";
-        btnOrder.className = "px-3 py-1 rounded-lg text-xs font-bold text-pika-textMain hover:bg-[#FFF3B8] transition-all";
-      } else {
-        btnOrder.className = "px-3 py-1 rounded-lg text-xs font-bold bg-[#FF7E67] text-white transition-all";
-        btnAlloc.className = "px-3 py-1 rounded-lg text-xs font-bold text-pika-textMain hover:bg-[#FFF3B8] transition-all";
-      }
-      renderMergedResult();
-    }
-
-    async function handleFiles(files) {
-      if (!files.length) return;
-      loadedGroups = [];
-
-      for (let file of files) {
-        try {
-          const text = await file.text();
-          const data = JSON.parse(text);
-          const fallbackName = file.name.replace(/\.json$/i, '');
-          loadedGroups.push({
-            groupName: data.groupName || fallbackName,
-            buyersData: Array.isArray(data.buyersData) ? data.buyersData : [],
-            matchRecords: Array.isArray(data.matchRecords) ? data.matchRecords : [],
-            buyerStates: data.buyerStates || {}
-          });
-        } catch (err) {
-          alert(`讀取「${file.name}」失敗，請確認這是由代購網頁匯出的 .json 檔案！`);
+        loadedCount++;
+        if(loadedCount === files.length){
+          saveData();
+          updateCampDropdown();
+          renderTab1();
+          renderTab2();
+          renderUploadedList();
+          alert("✅ 檔案上傳與整合成功！");
+          input.value = "";
         }
+      } catch(err) {
+        alert(`檔案 ${file.name} 格式錯誤！`);
       }
+    };
+    reader.readAsText(file);
+  });
+}
 
-      document.getElementById('loadedGroupsBadge').innerText = `已匯入 ${loadedGroups.length} 個團`;
-      document.getElementById('controlBar').classList.remove('hidden');
+function saveData(){
+  localStorage.setItem('pika_multigroup_data', JSON.stringify(uploadedGroups));
+  localStorage.setItem('pika_multigroup_states', JSON.stringify(buyerStates));
+}
 
-      const tagsContainer = document.getElementById('groupTagsContainer');
-      tagsContainer.innerHTML = loadedGroups.map(g => `
-        <span class="px-2.5 py-1 rounded-lg bg-[#E0F7FC] text-pika-blueText font-bold text-xs border border-[#A5E3F3]">
-          📁 ${g.groupName}（${g.buyersData.length}位買家 / 已配${g.matchRecords.length}張）
-        </span>
-      `).join('');
+function updateCampDropdown(){
+  const select = document.getElementById('selectCampTab1');
+  if(!select) return;
+  if(uploadedGroups.length === 0){
+    select.innerHTML = `<option value="">(尚未上傳任何代購團)</option>`;
+    return;
+  }
+  select.innerHTML = uploadedGroups.map(g => `<option value="${g.groupName}">${g.groupName} (${g.items.length}項商品)</option>`).join('');
+}
 
-      renderMergedResult();
-    }
+function renderTab1(){
+  const container = document.getElementById('tab1Content');
+  const select = document.getElementById('selectCampTab1');
+  if(!container || !select) return;
+  
+  const campName = select.value;
+  const group = uploadedGroups.find(g => g.groupName === campName);
+  
+  if(!group || !group.items || group.items.length === 0){
+    container.innerHTML = `<div class="panel" style="text-align:center;color:#aaa;padding:20px;">請先至「檔案上傳」分頁上傳該團 JSON 檔案</div>`;
+    return;
+  }
+  
+  // 依照買家分組顯示
+  const buyersMap = {};
+  group.items.forEach(item => {
+    const b = item.friend || '未分類';
+    if(!buyersMap[b]) buyersMap[b] = [];
+    buyersMap[b].push(item);
+  });
+  
+  let html = '';
+  for(let buyer in buyersMap){
+    let itemsHtml = buyersMap[buyer].map(i => `
+      <div class="item-row">
+        <div style="flex:1;font-size:0.9rem;">${i.name} x ${i.qty || 1}</div>
+        <div style="font-size:0.85rem;color:#b87c53;">${i.price * (i.qty || 1)}円</div>
+      </div>
+    `).join('');
+    
+    html += `
+      <div class="group-card open">
+        <div class="group-header" onclick="this.parentElement.classList.toggle('open')">
+          <span style="font-weight:700;">👤 ${buyer}</span>
+          <span style="font-size:0.8rem;color:#666;">共 ${buyersMap[buyer].length} 項 ▾</span>
+        </div>
+        <div class="group-content" style="display:block;">
+          ${itemsHtml}
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
 
-    function normalizeName(name) {
-      return (name || '').trim();
-    }
-
-    function toggleMergedNotified(buyerName) {
-      if (!mergedStates[buyerName]) mergedStates[buyerName] = {};
-      mergedStates[buyerName].notified = !mergedStates[buyerName].notified;
-      saveMergedStates();
-      renderMergedResult();
-    }
-
-    function toggleMergedPacked(buyerName) {
-      if (!mergedStates[buyerName]) mergedStates[buyerName] = {};
-      mergedStates[buyerName].packed = !mergedStates[buyerName].packed;
-      saveMergedStates();
-      renderMergedResult();
-    }
-
-    function copyMergedNotice(buyerName, noticeText, btnEl) {
-      navigator.clipboard.writeText(noticeText).then(() => {
-        const orig = btnEl.innerHTML;
-        btnEl.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i><span>已複製！</span>`;
-        btnEl.classList.remove('bg-[#FFDEE2]', 'text-pika-accent');
-        btnEl.classList.add('bg-green-100', 'text-green-600');
-        lucide.createIcons();
-        setTimeout(() => {
-          btnEl.innerHTML = orig;
-          btnEl.classList.remove('bg-green-100', 'text-green-600');
-          btnEl.classList.add('bg-[#FFDEE2]', 'text-pika-accent');
-          lucide.createIcons();
-        }, 1500);
-      }).catch(() => {
-        alert('複製失敗，請手動複製：\n' + noticeText);
+function renderTab2(){
+  const container = document.getElementById('tab2Content');
+  const searchInput = document.getElementById('globalSearch');
+  if(!container) return;
+  
+  const keyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
+  
+  if(uploadedGroups.length === 0){
+    container.innerHTML = `<div class="panel" style="text-align:center;color:#aaa;padding:20px;">目前沒有跨團資料，請先至「檔案上傳」分頁上傳檔案</div>`;
+    return;
+  }
+  
+  // 彙整所有買家跨團資料
+  // structure: { "買家名": [ { groupName, item } ] }
+  const allBuyers = {};
+  uploadedGroups.forEach(group => {
+    if(group.items){
+      group.items.forEach(item => {
+        const b = item.friend || '未分類';
+        if(!allBuyers[b]) allBuyers[b] = [];
+        allBuyers[b].push({ groupName: group.groupName, item: item });
       });
     }
-
-    function renderMergedResult() {
-      const grid = document.getElementById('resultGrid');
-      const keyword = (document.getElementById('searchInput').value || '').trim().toLowerCase();
-      const unitPrice = Number(document.getElementById('unitPriceInput').value) || 55;
-
-      if (viewMode === 'allocated') {
-        const buyerMap = {};
-
-        loadedGroups.forEach(group => {
-          group.matchRecords.forEach(rec => {
-            const bName = normalizeName(rec.buyerName);
-            if (!bName || bName === '自留 / 可釋出') return;
-
-            if (!buyerMap[bName]) {
-              buyerMap[bName] = {
-                buyerName: bName,
-                groups: {},
-                totalCards: 0
-              };
-            }
-            if (!buyerMap[bName].groups[group.groupName]) {
-              buyerMap[bName].groups[group.groupName] = {};
-            }
-            const cardKey = `${rec.zone}區${rec.role}`;
-            buyerMap[bName].groups[group.groupName][cardKey] = (buyerMap[bName].groups[group.groupName][cardKey] || 0) + 1;
-            buyerMap[bName].totalCards += 1;
-          });
-        });
-
-        let list = Object.values(buyerMap);
-        if (keyword) {
-          list = list.filter(b => b.buyerName.toLowerCase().includes(keyword));
-        }
-
-        document.getElementById('buyerCountBadge').innerText = `共 ${list.length} 位有分到卡`;
-
-        if (list.length === 0) {
-          grid.innerHTML = `<div class="col-span-full text-center py-8 bg-white rounded-2xl pika-card-border text-xs text-pika-textSub">目前匯入的檔案中沒有已分配卡片的買家紀錄（可切換到「原始喊單總覽」查看登記內容）</div>`;
-          return;
-        }
-
-        grid.innerHTML = list.map(b => {
-          const totalPrice = b.totalCards * unitPrice;
-          const state = mergedStates[b.buyerName] || {};
-          const isNotified = !!state.notified;
-          const isPacked = !!state.packed;
-
-          const bgStyle = isPacked ? 'bg-[#EBF8FF] border-[#BEE3F8]' : 'bg-white border-[#FFE8C8]';
-          const opacityStyle = isNotified ? 'opacity-45' : 'opacity-100';
-
-          const groupTexts = Object.entries(b.groups).map(([gName, cardsObj]) => {
-            const itemsStr = Object.entries(cardsObj).map(([cName, cnt]) => `${cName}${cnt}張`).join('、');
-            return `【${gName}】${itemsStr}`;
-          });
-          const noticeText = `你好 卡片有排單到 ${groupTexts.join('；')} ，共計 ${b.totalCards} 張（${totalPrice}元），晚點會給你賣貨便下單~`;
-
-          return `
-            <div class="${bgStyle} ${opacityStyle} rounded-2xl p-4 border-2 pika-shadow flex flex-col justify-between space-y-3 transition-all">
-              <div class="space-y-2.5">
-                <div class="flex items-center justify-between border-b border-[#FFE8C8] pb-2">
-                  <div class="flex items-center gap-2">
-                    <span class="bg-[#FF7E67] text-white font-bold text-xs px-2 py-0.5 rounded-lg">
-                      跨 ${Object.keys(b.groups).length} 團
-                    </span>
-                    <h3 class="font-bold text-pika-textMain text-base">${b.buyerName}</h3>
-                  </div>
-                  <span class="font-extrabold text-pika-accent text-sm">
-                    共 ${b.totalCards} 張 ($${totalPrice})
-                  </span>
-                </div>
-
-                <div class="space-y-2">
-                  ${Object.entries(b.groups).map(([gName, cardsObj]) => `
-                    <div class="bg-[#FFFDF2] p-2.5 rounded-xl border border-[#FFE8C8]">
-                      <span class="text-[11px] font-bold text-pika-blueText block mb-1">📁 ${gName}</span>
-                      <div class="flex flex-wrap gap-1">
-                        ${Object.entries(cardsObj).map(([cName, cnt]) => `
-                          <span class="px-2 py-0.5 rounded-md bg-white border border-[#FFE8C8] text-xs font-bold text-pika-textMain">
-                            ${cName} <span class="text-pika-accent font-extrabold">x${cnt}</span>
-                          </span>
-                        `).join('')}
-                      </div>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-
-              <div class="pt-2 border-t border-[#FFE8C8] flex items-center justify-end gap-1.5">
-                <button onclick="toggleMergedNotified('${b.buyerName.replace(/'/g, "\\'")}')" class="p-1.5 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all ${isNotified ? 'bg-gray-200 text-gray-700 border-gray-300' : 'bg-white hover:bg-gray-50 text-gray-500 border-[#FFE8C8]'}">
-                  <i data-lucide="${isNotified ? 'check-square' : 'square'}" class="w-3.5 h-3.5 ${isNotified ? 'text-green-600' : ''}"></i>
-                  <span>${isNotified ? '已通知' : '通知'}</span>
-                </button>
-                <button onclick="toggleMergedPacked('${b.buyerName.replace(/'/g, "\\'")}')" class="px-2.5 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all ${isPacked ? 'bg-[#3182CE] text-white border-[#2B6CB0]' : 'bg-white hover:bg-blue-50 text-[#3182CE] border-[#BEE3F8]'}">
-                  <i data-lucide="package-check" class="w-3.5 h-3.5"></i>
-                  <span>${isPacked ? '已打包' : '打包'}</span>
-                </button>
-                <button onclick='copyMergedNotice(${JSON.stringify(b.buyerName)}, ${JSON.stringify(noticeText)}, this)' class="bg-[#FFDEE2] hover:bg-[#FFC1C5] text-pika-accent font-bold px-3 py-1.5 rounded-lg text-xs border border-[#FFB0B5] flex items-center gap-1 transition-all">
-                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                  <span>複製通知</span>
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-      } else {
-        const orderMap = {};
-        loadedGroups.forEach(group => {
-          group.buyersData.forEach(b => {
-            const bName = normalizeName(b.name);
-            if (!bName) return;
-            if (!orderMap[bName]) {
-              orderMap[bName] = {
-                buyerName: bName,
-                entries: []
-              };
-            }
-            orderMap[bName].entries.push({
-              groupName: group.groupName,
-              orderNo: b.orderNo,
-              content: b.content
-            });
-          });
-        });
-
-        let list = Object.values(orderMap);
-        if (keyword) {
-          list = list.filter(b => b.buyerName.toLowerCase().includes(keyword));
-        }
-
-        document.getElementById('buyerCountBadge').innerText = `共 ${list.length} 位登記買家`;
-
-        if (list.length === 0) {
-          grid.innerHTML = `<div class="col-span-full text-center py-8 bg-white rounded-2xl pika-card-border text-xs text-pika-textSub">沒有符合的買家喊單資料</div>`;
-          return;
-        }
-
-        grid.innerHTML = list.map(b => `
-          <div class="bg-white rounded-2xl p-4 border-2 border-[#FFE8C8] pika-shadow space-y-2.5">
-            <div class="flex items-center justify-between border-b border-[#FFE8C8] pb-2">
-              <h3 class="font-bold text-pika-textMain text-base">👤 ${b.buyerName}</h3>
-              <span class="bg-[#FFF3B8] text-pika-textMain font-bold text-xs px-2.5 py-0.5 rounded-full border border-[#F7C948]">
-                參加 ${b.entries.length} 個團
-              </span>
-            </div>
-            <div class="space-y-2">
-              ${b.entries.map(e => `
-                <div class="bg-[#FFFDF2] p-2.5 rounded-xl border border-[#FFE8C8]">
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-[11px] font-bold text-pika-accent">📁 ${e.groupName}</span>
-                    <span class="text-[11px] font-bold text-pika-textSub">留言順序 #${e.orderNo}</span>
-                  </div>
-                  <p class="text-xs font-bold text-pika-textMain">${e.content}</p>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `).join('');
-      }
-
-      lucide.createIcons();
+  });
+  
+  let html = '';
+  for(let buyer in allBuyers){
+    let buyerItems = allBuyers[buyer];
+    
+    // 如果有關鍵字，過濾買家名字或商品名稱
+    if(keyword){
+      const matchBuyer = buyer.toLowerCase().includes(keyword);
+      const matchItem = buyerItems.some(bi => bi.item.name.toLowerCase().includes(keyword));
+      if(!matchBuyer && !matchItem) continue;
     }
-  </script>
+    
+    // 計算該買家跨團總金額
+    let totalJPY = 0;
+    let groupBreakdownHtml = '';
+    
+    // 依團別再細分
+    const groupMap = {};
+    buyerItems.forEach(bi => {
+      if(!groupMap[bi.groupName]) groupMap[bi.groupName] = [];
+      groupMap[bi.groupName].push(bi.item);
+    });
+    
+    for(let gName in groupMap){
+      let gItemsHtml = groupMap[gName].map(i => {
+        let p = i.price * (i.qty || 1);
+        totalJPY += p;
+        return `<div style="font-size:0.85rem;color:#555;padding-left:10px;">• ${i.name} x ${i.qty || 1} (${p}円)</div>`;
+      }).join('');
+      
+      groupBreakdownHtml += `
+        <div style="margin:6px 0;font-size:0.9rem;font-weight:700;color:var(--btn-active);">📌 ${gName}</div>
+        ${gItemsHtml}
+      `;
+    }
+    
+    html += `
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:2px solid var(--maca-yellow);padding-bottom:6px;">
+          <span style="font-size:1.05rem;font-weight:700;">👤 ${buyer}</span>
+          <button class="btn-copy" onclick="copyBuyerSummary('${buyer}')">📋 複製明細</button>
+        </div>
+        ${groupBreakdownHtml}
+        <div style="margin-top:10px;text-align:right;font-size:0.95rem;color:#b87c53;font-weight:700;">
+          跨團總計：${totalJPY} 円
+        </div>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html || `<div class="panel" style="text-align:center;color:#aaa;padding:20px;">找不到符合的買家或商品</div>`;
+}
+
+function renderUploadedList(){
+  const listDiv = document.getElementById('uploadedCampList');
+  if(!listDiv) return;
+  if(uploadedGroups.length === 0){
+    listDiv.innerHTML = `<div style="font-size:0.85rem;color:#aaa;">尚未上傳任何檔案</div>`;
+    return;
+  }
+  listDiv.innerHTML = uploadedGroups.map((g, index) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9f9f9;border-radius:12px;border:1px solid #eee;">
+      <span style="font-size:0.9rem;">📦 ${g.groupName} (${g.items ? g.items.length : 0}項商品)</span>
+      <button onclick="removeGroup(${index})" class="btn-sm-action" style="background:#ffadad !important;color:white !important;border:none !important;">刪除</button>
+    </div>
+  `).join('');
+}
+
+function removeGroup(index){
+  if(confirm("確定要刪除這個已上傳的代購團嗎？")){
+    uploadedGroups.splice(index, 1);
+    saveData();
+    updateCampDropdown();
+    renderTab1();
+    renderTab2();
+    renderUploadedList();
+  }
+}
+
+function copyBuyerSummary(buyerName){
+  let text = `【${buyerName}】跨團代購明細：\n`;
+  let total = 0;
+  
+  uploadedGroups.forEach(group => {
+    if(group.items){
+      let items = group.items.filter(i => i.friend === buyerName);
+      if(items.length > 0){
+        text += `\n[${group.groupName}]:\n`;
+        items.forEach(i => {
+          let p = i.price * (i.qty || 1);
+          total += p;
+          text += `- ${i.name} x ${i.qty || 1}：${p}円\n`;
+        });
+      }
+    }
+  });
+  
+  text += `\n------------------\n跨團總金額：${total} 円`;
+  
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(() => alert(`已成功複製 ${buyerName} 的跨團明細！`));
+  } else {
+    alert("複製失敗，請手動複製。");
+  }
+}
+</script>
+
 </body>
 </html>
