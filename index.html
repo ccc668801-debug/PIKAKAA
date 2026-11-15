@@ -1,518 +1,283 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokepeace 代購管理與配對工具（三分頁版）</title>
-    <style>
-        :root {
-            --primary-color: #d85a86;
-            --primary-light: #ffe6f0;
-            --primary-hover: #ffccd5;
-            --bg-color: #fdf6f9;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-sub: #666666;
-            --border-color: #f0d5e1;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 16px;
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            color: var(--primary-color);
-            margin-bottom: 4px;
-        }
-
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-sub);
-        }
-
-        /* 控制面板與檔案上傳/匯出 */
-        .control-panel {
-            background: var(--card-bg);
-            padding: 16px;
-            border-radius: 14px;
-            box-shadow: 0 4px 12px rgba(216, 90, 134, 0.08);
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .action-btn, .file-upload-label {
-            background-color: var(--primary-light);
-            color: var(--primary-color);
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            text-align: center;
-            border: none;
-            font-size: 14px;
-            transition: background 0.2s;
-            display: inline-block;
-        }
-
-        .action-btn:hover, .file-upload-label:hover {
-            background-color: var(--primary-hover);
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .group-info {
-            font-size: 14px;
-            color: var(--text-sub);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        /* 三分頁切換頁籤 */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px 8px;
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            color: var(--text-sub);
-            font-size: 14px;
-            text-align: center;
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* 容器與卡片樣式 */
-        #buyerContainer, #matchContainer, #itemContainer {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .buyer-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-
-        .buyer-header {
-            background: var(--primary-light);
-            padding: 14px 16px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            color: #b03060;
-            user-select: none;
-        }
-
-        .buyer-header:hover {
-            background: var(--primary-hover);
-        }
-
-        .buyer-title-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .order-badge {
-            background: var(--primary-color);
-            color: white;
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 20px;
-        }
-
-        .buyer-content {
-            padding: 16px;
-            background: var(--card-bg);
-            border-top: 1px solid var(--border-color);
-            white-space: pre-wrap;
-            font-size: 15px;
-            line-height: 1.6;
-            color: #444;
-        }
-
-        .collapsed {
-            display: none;
-        }
-
-        .arrow {
-            transition: transform 0.2s ease;
-            font-size: 12px;
-        }
-
-        .arrow.rotate {
-            transform: rotate(-90deg);
-        }
-
-        /* 表格樣式 */
-        .item-table, .match-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        }
-
-        .item-table th, .item-table td,
-        .match-table th, .match-table td {
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 14px;
-        }
-
-        .item-table th, .match-table th {
-            background: var(--primary-light);
-            color: #b03060;
-        }
-
-        .item-table tr:last-child td,
-        .match-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .placeholder-text {
-            text-align: center;
-            color: #999;
-            padding: 40px 20px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 2px dashed var(--border-color);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PikaBuyer 代購喊單小幫手</title>
+<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--maca-yellow:#FFF2CC;--pika-brown:#5C4033;--bg-color:#FEF9EF;--suica-green:#CAE9E0;--cash-pink:#FFC8DD;--btn-active:#F3A05F;}
+*{font-family:'Zen Maru Gothic',sans-serif!important;box-sizing:border-box;}
+body{background:var(--bg-color);color:var(--pika-brown);margin:0;padding-bottom:90px;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
+.top-bar{background:#fff;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--maca-yellow);position:sticky;top:0;z-index:1000;width:100%;max-width:420px;}
+.user-info{font-family:'Mochiy Pop One',sans-serif!important;color:#E67E22;font-size:.95rem;}
+.pika-header{font-family:'Mochiy Pop One',sans-serif!important;font-size:1.6rem;color:var(--btn-active);text-align:center;margin:15px 0;}
+.view-section{width:100%;max-width:420px;display:none;padding:0 10px;}
+.active{display:block;}
+.panel{background:#fff;padding:15px;border-radius:25px;border:3px solid var(--maca-yellow);margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.05);}
+input,textarea{width:100%;padding:10px;margin:6px 0;border:2px solid #eee;border-radius:12px;font-size:0.95rem;}
+.btn-main{width:100%;padding:12px;background:var(--btn-active);border-radius:20px;margin-top:10px;border:none;color:white;font-weight:bold;cursor:pointer;font-size:1rem;font-family:'Mochiy Pop One',sans-serif!important;}
+.btn-outline{width:100%;padding:10px;background:#fff;border:2px solid #eee;border-radius:15px;margin-top:8px;cursor:pointer;font-size:0.85rem;color:#666;font-weight:bold;}
+.toast-msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.75);color:#fff;padding:12px 24px;border-radius:50px;font-size:0.95rem;z-index:9999;display:none;font-weight:bold;box-shadow:0 4px 15px rgba(0,0,0,0.25);animation:toastFadeIn 0.2s ease-out;}
+@keyframes toastFadeIn{from{opacity:0;transform:translate(-50%,-40%);}to{opacity:1;transform:translate(-50%,-50%);}}
+.buyer-card{background:#fff;border-radius:20px;padding:12px 14px;margin-bottom:12px;border:2px solid var(--maca-yellow);box-shadow:0 3px 8px rgba(0,0,0,0.04);}
+.buyer-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding-bottom:6px;border-bottom:1px solid #f7f0e8;}
+.buyer-name{font-family:'Mochiy Pop One',sans-serif!important;font-size:1.05rem;color:var(--pika-brown);}
+.buyer-badge{background:var(--maca-yellow);padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:bold;color:#A07855;}
+.buyer-body{display:none;padding-top:8px;}
+.open .buyer-body{display:block;}
+.item-row-buyer{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #f4efe6;font-size:0.9rem;}
+.total-summary-banner{background:#fff;padding:15px;border-radius:20px;border:3px solid var(--btn-active);margin-bottom:15px;text-align:center;font-weight:bold;font-size:1.1rem;}
+.bottom-nav{position:fixed;bottom:0;width:100%;max-width:420px;background:#fff;display:flex;justify-content:space-around;padding:10px 10px calc(10px + env(safe-area-inset-bottom));border-top:3px solid var(--maca-yellow);z-index:1000;}
+.nav-item{font-size:.75rem;cursor:pointer;text-align:center;color:#888;flex:1;}
+.nav-item.active{color:var(--btn-active);font-weight:700;}
+</style>
 </head>
 <body>
 
-    <header>
-        <h2>🌸 Pokepeace 代購管理與配對工具</h2>
-        <div class="subtitle">未填寫金額品項將自動預設為 55 元統一價</div>
-    </header>
+<div id="toastMessage" class="toast-msg">✨ 記錄成功！</div>
 
-    <!-- 控制面板與檔案上傳/匯出 -->
-    <div class="control-panel">
-        <div class="btn-group">
-            <label class="file-upload-label" for="jsonFile">
-                📁 讀取/上傳團務 JSON 檔案
-            </label>
-            <input type="file" id="jsonFile" accept=".json">
-            <button class="action-btn" id="exportBtn" style="display:none;">💾 匯出目前 JSON 檔案</button>
-        </div>
-        <div class="group-info" id="groupInfoText" style="display: none;">
-            <span id="loadedGroupName">群組：尚未載入</span>
-            <span id="loadedCount">商品數：0 | 買家數：0 位 | 配對紀錄：0 筆</span>
-        </div>
+<div id="appInterface" style="width:100%;max-width:420px">
+  <div class="top-bar">
+    <div class="user-info">PikaBuyer 🛒</div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-size:0.7rem;color:#A08C7D;font-weight:bold;" id="versionText">v2.0</span>
+      <span style="font-size:1.4rem">🐾</span>
     </div>
+  </div>
 
-    <!-- 三分頁切換頁籤 -->
-    <div class="tabs" id="tabNav" style="display: none;">
-        <button class="tab-btn active" onclick="switchTab('items')">📦 商品清單</button>
-        <button class="tab-btn" onclick="switchTab('buyers')">📋 買家登記清單</button>
-        <button class="tab-btn" onclick="switchTab('matches')">⚡ 詳細配對紀錄</button>
+  <!-- 分頁 1：輸入 -->
+  <div id="inputView" class="view-section active">
+    <h2 class="pika-header">快速喊單輸入</h2>
+    <div class="panel">
+      <input type="text" id="buyerName" placeholder="👤 買家名字 (例: 小皮卡)">
+      <input type="text" id="itemName" placeholder="🛍️ 商品名稱 (例: 盲盒 A款)">
+      <input type="number" id="itemPrice" placeholder="💰 金額 (可不填或填數字)">
+      <button class="btn-main" onclick="addOrder()">✨ 新增喊單</button>
+      <button class="btn-outline" onclick="quickFillBuyer()" style="margin-top:10px;background:#FFF9F0;">🐾 帶入上一位買家名字繼續喊</button>
     </div>
+  </div>
 
-    <!-- 內容展示區塊：分頁 1：商品清單 -->
-    <div id="itemsTab" class="tab-content active">
-        <div id="itemContainer">
-            <div class="placeholder-text">請先上方上傳您的代購 JSON 檔案</div>
+  <!-- 分頁 2：總覽 -->
+  <div id="summaryView" class="view-section">
+    <h2 class="pika-header">代購總覽統計</h2>
+    <div class="total-summary-banner" id="totalBanner">
+      總買家數: 0位<br>總商品數: 0件<br>總金額: $0
+    </div>
+    <button class="btn-main" onclick="exportAllText()" style="background:var(--suica-green);color:var(--pika-brown);">📋 一鍵複製對帳格式</button>
+  </div>
+
+  <!-- 分頁 3：清單與查詢 -->
+  <div id="listView" class="view-section">
+    <h2 class="pika-header">買家喊單清單</h2>
+    <div style="margin-bottom:12px;">
+      <input type="text" id="filterKeyword" placeholder="🔍 輸入買家名字或商品任一字搜尋..." oninput="renderOrders()" style="margin:0;padding:10px;font-size:0.9rem;">
+    </div>
+    <div id="buyerListContainer"></div>
+  </div>
+
+  <!-- 底部導覽列 -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('input',this)"><div>📥</div><span>輸入</span></div>
+    <div class="nav-item" onclick="switchTab('summary',this)"><div>📊</div><span>總覽</span></div>
+    <div class="nav-item" onclick="switchTab('list',this)"><div>📋</div><span>清單</span></div>
+  </nav>
+</div>
+
+<script>
+let buyersData = JSON.parse(localStorage.getItem('pika_buyers_v2')) || {};
+let openedBuyers = new Set();
+let lastBuyerName = "";
+
+function showToast(msg="✨ 記錄成功！"){
+  const t = document.getElementById('toastMessage');
+  t.innerText = msg;
+  t.style.display='block';
+  setTimeout(()=>{t.style.display='none';},1500);
+}
+
+function switchTab(tabName, el){
+  document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  
+  document.getElementById(tabName + 'View').classList.add('active');
+  el.classList.add('active');
+  
+  if(tabName === 'summary' || tabName === 'list'){
+    renderOrders();
+  }
+}
+
+function quickFillBuyer(){
+  if(lastBuyerName){
+    document.getElementById('buyerName').value = lastBuyerName;
+    document.getElementById('itemName').focus();
+    showToast(`🐾 已帶入買家：${lastBuyerName}`);
+  } else {
+    alert("尚無上一筆買家紀錄！");
+  }
+}
+
+function addOrder(){
+  const nameInput = document.getElementById('buyerName');
+  const itemInput = document.getElementById('itemName');
+  const priceInput = document.getElementById('itemPrice');
+  
+  const buyer = nameInput.value.trim();
+  const item = itemInput.value.trim();
+  const price = parseInt(priceInput.value) || 0;
+
+  if(!buyer) return alert("請輸入買家名字！");
+  if(!item) return alert("請輸入商品名稱！");
+
+  lastBuyerName = buyer;
+
+  if(!buyersData[buyer]){
+    buyersData[buyer] = [];
+    openedBuyers.add(buyer);
+  }
+
+  buyersData[buyer].push({
+    id: Date.now() + Math.random(),
+    name: item,
+    price: price
+  });
+
+  itemInput.value = "";
+  priceInput.value = "";
+  itemInput.focus();
+
+  syncAndRender();
+  showToast("✨ 喊單新增成功！");
+}
+
+function syncAndRender(){
+  localStorage.setItem('pika_buyers_v2', JSON.stringify(buyersData));
+}
+
+function toggleBuyer(buyerName, el){
+  if(openedBuyers.has(buyerName)){
+    openedBuyers.delete(buyerName);
+    el.classList.remove('open');
+  } else {
+    openedBuyers.add(buyerName);
+    el.classList.add('open');
+  }
+}
+
+function deleteItem(buyerName, itemId){
+  if(confirm("確定刪除這項商品？")){
+    buyersData[buyerName] = buyersData[buyerName].filter(i => i.id !== itemId);
+    if(buyersData[buyerName].length === 0){
+      delete buyersData[buyerName];
+      openedBuyers.delete(buyerName);
+    }
+    syncAndRender();
+    renderOrders();
+  }
+}
+
+function deleteBuyerGroup(buyerName){
+  if(confirm(`確定要刪除買家「${buyerName}」及其所有商品嗎？`)){
+    delete buyersData[buyerName];
+    openedBuyers.delete(buyerName);
+    syncAndRender();
+    renderOrders();
+  }
+}
+
+function exportAllText(){
+  let text = "🛒 【PikaBuyer 代購明細清單】\n";
+  let grandTotal = 0;
+  
+  Object.entries(buyersData).forEach(([buyer, items]) => {
+    text += `\n👤 買家：${buyer}\n`;
+    let subTotal = 0;
+    items.forEach((i, idx) => {
+      text += `  ${idx+1}. ${i.name} ${i.price > 0 ? '($'+i.price+')':''}\n`;
+      subTotal += i.price;
+    });
+    if(subTotal > 0){
+      text += `  💰 小計：$${subTotal}\n`;
+      grandTotal += subTotal;
+    }
+  });
+
+  if(grandTotal > 0){
+    text += `\n🌟 總金額合庫：$${grandTotal}`;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast("📋 已複製全部對帳清單！");
+  }).catch(err => {
+    alert("複製失敗，請手動複製");
+  });
+}
+
+function renderOrders(){
+  const container = document.getElementById('buyerListContainer');
+  container.innerHTML = "";
+  
+  const keyword = (document.getElementById('filterKeyword').value || "").toLowerCase().trim();
+  
+  let totalBuyers = 0;
+  let totalItems = 0;
+  let grandTotalAmount = 0;
+
+  const entries = Object.entries(buyersData);
+  
+  entries.forEach(([buyer, items]) => {
+    let subTotal = items.reduce((sum, i) => sum + i.price, 0);
+    totalBuyers++;
+    totalItems += items.length;
+    grandTotalAmount += subTotal;
+
+    // 關鍵字篩選（符合買家名字或任一商品名稱）
+    const matchBuyer = buyer.toLowerCase().includes(keyword);
+    const matchItem = items.some(i => i.name.toLowerCase().includes(keyword));
+    if(keyword && !matchBuyer && !matchItem) return;
+
+    let isOpen = keyword !== "" || openedBuyers.has(buyer);
+
+    const card = document.createElement('div');
+    card.className = `buyer-card ${isOpen ? 'open' : ''}`;
+    
+    let itemsHtml = items.map(i => `
+      <div class="item-row-buyer">
+        <span>• ${i.name} ${i.price > 0 ? '<b style="color:#E05A47;">$'+i.price+'</b>':''}</span>
+        <span onclick="deleteItem('${buyer}', ${i.id})" style="color:#ccc;cursor:pointer;font-weight:bold;padding:0 6px;">✕</span>
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="buyer-header" onclick="toggleBuyer('${buyer}', this.parentElement)">
+        <div>
+          <span class="buyer-name">👤 ${buyer}</span>
+          <span class="buyer-badge">${items.length}件 ${subTotal > 0 ? '($'+subTotal+')':''}</span>
         </div>
-    </div>
-
-    <!-- 內容展示區塊：分頁 2：買家登記清單 -->
-    <div id="buyersTab" class="tab-content">
-        <div id="buyerContainer">
-            <div class="placeholder-text">請先上方上傳您的代購 JSON 檔案</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span onclick="event.stopPropagation(); deleteBuyerGroup('${buyer}')" style="color:#e74c3c;font-size:0.8rem;cursor:pointer;" title="刪除買家">🗑️</span>
+          <span style="font-size:0.8rem;color:#A07855;">▾</span>
         </div>
-    </div>
+      </div>
+      <div class="buyer-body">
+        ${itemsHtml}
+      </div>
+    `;
+    container.appendChild(card);
+  });
 
-    <!-- 內容展示區塊：分頁 3：詳細配對紀錄 -->
-    <div id="matchesTab" class="tab-content">
-        <div id="matchContainer">
-            <div class="placeholder-text">尚無配對紀錄</div>
-        </div>
-    </div>
+  if(container.innerHTML === ""){
+    container.innerHTML = `<div style="text-align:center;color:#999;padding:30px;font-size:0.9rem;">找不到符合的買家或商品唷！🐾</div>`;
+  }
 
-    <script>
-        let currentAppData = null;
+  document.getElementById('totalBanner').innerHTML = `總買家數: ${totalBuyers}位<br>總商品數: ${totalItems}件<br>總金額: $${grandTotalAmount.toLocaleString()}`;
+}
 
-        // 監聽檔案上傳
-        document.getElementById('jsonFile').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+window.onload = function(){
+  renderOrders();
+};
+</script>
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    currentAppData = JSON.parse(e.target.result);
-                    processAndRenderData(currentAppData);
-                    document.getElementById('exportBtn').style.display = 'inline-block';
-                    document.getElementById('tabNav').style.display = 'flex';
-                } catch (error) {
-                    alert('JSON 檔案格式錯誤或無法解析！');
-                    console.error(error);
-                }
-            };
-            reader.readAsText(file);
-        });
-
-        // 頁籤切換邏輯 (三分頁)
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-            if (tabName === 'items') {
-                document.querySelector('.tabs button:nth-child(1)').classList.add('active');
-                document.getElementById('itemsTab').classList.add('active');
-            } else if (tabName === 'buyers') {
-                document.querySelector('.tabs button:nth-child(2)').classList.add('active');
-                document.getElementById('buyersTab').classList.add('active');
-            } else {
-                document.querySelector('.tabs button:nth-child(3)').classList.add('active');
-                document.getElementById('matchesTab').classList.add('active');
-            }
-        }
-
-        // 資料處理與渲染核心
-        function processAndRenderData(data) {
-            // 1. 處理商品價格：未寫金額者全面自動預設為 55 元
-            if (data.buyData && Array.isArray(data.buyData)) {
-                data.buyData = data.buyData.map(item => ({
-                    ...item,
-                    price: (item.price !== undefined && item.price !== null && item.price !== '') ? item.price : 55
-                }));
-            } else {
-                // 如果檔案原本沒有 buyData，根據常見規格自動建立預設商品清單
-                data.buyData = [
-                    { id: 1, name: "A區 皮卡丘", price: 55, qty: 1, collapsed: false },
-                    { id: 2, name: "A區 迷你Q", price: 55, qty: 6, collapsed: false },
-                    { id: 3, name: "A區 一對鼠", price: 55, qty: 5, collapsed: false },
-                    { id: 4, name: "A區 妙喵", price: 55, qty: 6, collapsed: false },
-                    { id: 5, name: "A區 木木梟", price: 55, qty: 3, collapsed: false },
-                    { id: 6, name: "A區 炎兔兒", price: 55, qty: 3, collapsed: false },
-                    { id: 7, name: "A區 波加曼", price: 55, qty: 7, collapsed: false },
-                    { id: 8, name: "A區 皮丘", price: 55, qty: 4, collapsed: false },
-                    { id: 9, name: "A區 電飛鼠", price: 55, qty: 6, collapsed: false },
-                    { id: 10, name: "A區 小卡比獸", price: 55, qty: 5, collapsed: false },
-                    { id: 11, name: "A區 正電拍拍", price: 55, qty: 4, collapsed: false },
-                    { id: 12, name: "A區 負電拍拍", price: 55, qty: 5, collapsed: false },
-                    { id: 13, name: "A區 胖丁", price: 55, qty: 8, collapsed: false },
-                    { id: 14, name: "A區 基拉祈", price: 55, qty: 6, collapsed: false },
-                    { id: 15, name: "A區 小仙奶", price: 55, qty: 2, collapsed: false },
-                    { id: 16, name: "A區 霜奶仙", price: 55, qty: 3, collapsed: false },
-                    { id: 17, name: "B區 皮卡丘", price: 55, qty: 1, collapsed: false },
-                    { id: 18, name: "B區 迷你Q", price: 55, qty: 5, collapsed: false },
-                    { id: 19, name: "B區 一對鼠", price: 55, qty: 5, collapsed: false },
-                    { id: 20, name: "B區 妙喵", price: 55, qty: 6, collapsed: false },
-                    { id: 21, name: "B區 木木梟", price: 55, qty: 3, collapsed: false },
-                    { id: 22, name: "B區 炎兔兒", price: 55, qty: 3, collapsed: false },
-                    { id: 23, name: "B區 波加曼", price: 55, qty: 6, collapsed: false },
-                    { id: 24, name: "B區 小卡比獸", price: 55, qty: 4, collapsed: false },
-                    { id: 25, name: "B區 胖丁", price: 55, qty: 3, collapsed: false },
-                    { id: 26, name: "B區 全家福", price: 55, qty: 5, collapsed: false }
-                ];
-            }
-
-            // 更新上方群組資訊
-            const infoBox = document.getElementById('groupInfoText');
-            infoBox.style.display = 'flex';
-            document.getElementById('loadedGroupName').textContent = `群組：${data.groupName || '未命名群組'}`;
-            
-            const items = data.buyData || [];
-            const buyers = data.buyersData || [];
-            const matches = data.matchRecords || [];
-            document.getElementById('loadedCount').textContent = `商品數：${items.length} | 買家數：${buyers.length} 位 | 配對紀錄：${matches.length} 筆`;
-
-            // 2. 渲染三個分頁
-            renderItems(items);
-            renderBuyers(buyers);
-            renderMatches(matches);
-        }
-
-        function renderItems(items) {
-            const container = document.getElementById('itemContainer');
-            container.innerHTML = '';
-
-            if (items.length === 0) {
-                container.innerHTML = '<div class="placeholder-text">此檔案中沒有找到商品資料 (`buyData`)。</div>';
-                return;
-            }
-
-            let tableHTML = `
-                <table class="item-table">
-                    <thead>
-                        <tr>
-                            <th>商品名稱</th>
-                            <th>單價</th>
-                            <th>數量 (Qty)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            items.forEach(item => {
-                const price = (item.price !== undefined && item.price !== null && item.price !== '') ? item.price : 55;
-                tableHTML += `
-                    <tr>
-                        <td><b>${item.name || '-'}</b></td>
-                        <td>${price} 元</td>
-                        <td>${item.qty !== undefined && item.qty !== null ? item.qty : '-'}</td>
-                    </tr>
-                `;
-            });
-
-            tableHTML += `</tbody></table>`;
-            container.innerHTML = tableHTML;
-        }
-
-        function renderBuyers(buyers) {
-            const container = document.getElementById('buyerContainer');
-            container.innerHTML = '';
-
-            if (buyers.length === 0) {
-                container.innerHTML = '<div class="placeholder-text">此檔案中沒有找到買家資料 (`buyersData`)。</div>';
-                return;
-            }
-
-            buyers.forEach((buyer, index) => {
-                let isCollapsed = buyer.collapsed || false; // 支援記錄折疊狀態
-
-                const card = document.createElement('div');
-                card.className = 'buyer-card';
-
-                // 標題列（點擊折疊）
-                const header = document.createElement('div');
-                header.className = 'buyer-header';
-                
-                const orderNo = buyer.orderNo || (index + 1);
-                header.innerHTML = `
-                    <div class="buyer-title-info">
-                        <span class="order-badge">#${orderNo}</span>
-                        <span>${buyer.name || '未命名買家'}</span>
-                    </div>
-                    <span class="arrow ${isCollapsed ? 'rotate' : ''}">▼</span>
-                `;
-
-                // 內容區塊
-                const content = document.createElement('div');
-                content.className = `buyer-content ${isCollapsed ? 'collapsed' : ''}`;
-                content.textContent = buyer.content || '無登記內容';
-
-                // 點擊事件：切換收合狀態
-                header.addEventListener('click', function() {
-                    isCollapsed = !isCollapsed;
-                    buyer.collapsed = isCollapsed; // 同步狀態
-                    content.classList.toggle('collapsed', isCollapsed);
-                    header.querySelector('.arrow').classList.toggle('rotate', isCollapsed);
-                });
-
-                card.appendChild(header);
-                card.appendChild(content);
-                container.appendChild(card);
-            });
-        }
-
-        function renderMatches(matches) {
-            const container = document.getElementById('matchContainer');
-            container.innerHTML = '';
-
-            if (matches.length === 0) {
-                container.innerHTML = '<div class="placeholder-text">此檔案中沒有找到配對紀錄 (`matchRecords`)。</div>';
-                return;
-            }
-
-            let tableHTML = `
-                <table class="match-table">
-                    <thead>
-                        <tr>
-                            <th>區域 (Zone)</th>
-                            <th>角色品項</th>
-                            <th>分配買家</th>
-                            <th>編號</th>
-                            <th>時間</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            matches.forEach(match => {
-                tableHTML += `
-                    <tr>
-                        <td><b>${match.zone || '-'}</b></td>
-                        <td>${match.role || '-'}</td>
-                        <td>${match.buyerName || '-'}</td>
-                        <td>${match.buyerOrderNo !== null && match.buyerOrderNo !== undefined ? '#' + match.buyerOrderNo : '-'}</td>
-                        <td>${match.time || '-'}</td>
-                    </tr>
-                `;
-            });
-
-            tableHTML += `</tbody></table>`;
-            container.innerHTML = tableHTML;
-        }
-
-        // 匯出修改後的 JSON 檔案功能
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            if (!currentAppData) return;
-
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentAppData, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `${currentAppData.groupName || '代購資料'}_updated.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        });
-    </script>
 </body>
 </html>
