@@ -22,10 +22,6 @@ input,textarea,select,button{width:100%;padding:12px;margin:8px 0;border:2px sol
 .group-content{display:none;padding:10px;background:#fff;}
 .group-card.open .group-content{display:block;}
 .item-row{display:flex;align-items:center;padding:10px;border-bottom:1px solid #eee;gap:8px;background:#fff;}
-.check-circle{width:24px;height:24px;border-radius:50%;border:2px solid #ddd;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;}
-.is-checked{background:var(--check-green);border-color:var(--check-green);color:white;}
-.ship-circle{width:24px;height:24px;border-radius:50%;border:2px solid #ddd;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.7rem;background:#f3e5f5;color:#8e24aa;}
-.is-shipped{background:#8e24aa;border-color:#8e24aa;color:white;}
 .btn-sm-action{width:auto !important;padding:4px 10px !important;margin:0 !important;border-radius:8px !important;font-size:0.75rem !important;cursor:pointer;border:1.5px solid #ddd !important;background:#f9f9f9 !important;color:#666 !important;}
 .btn-copy{background:#f5f5f5;border:none;padding:6px 12px;border-radius:12px;font-size:0.85rem;color:#666;cursor:pointer;}
 .bottom-nav{position:fixed;bottom:0;width:100%;max-width:420px;background:#fff;display:flex;justify-content:space-around;padding:10px 10px calc(10px + env(safe-area-inset-bottom));border-top:3px solid var(--maca-yellow);z-index:1000;}
@@ -37,7 +33,7 @@ input,textarea,select,button{width:100%;padding:12px;margin:8px 0;border:2px sol
 
 <div class="top-bar">
   <div style="font-size:0.9rem;font-weight:700;color:var(--pika-brown);">📦 跨團總對帳中心</div>
-  <div style="font-size:0.75rem;color:#aaa;background:#f5f5f5;padding:3px 8px;border-radius:8px;">v3.0</div>
+  <div style="font-size:0.75rem;color:#aaa;background:#f5f5f5;padding:3px 8px;border-radius:8px;">v3.1</div>
 </div>
 
 <!-- 分頁一：單團明細檢視 -->
@@ -82,13 +78,10 @@ input,textarea,select,button{width:100%;padding:12px;margin:8px 0;border:2px sol
 
 <script>
 let uploadedGroups = [];
-let buyerStates = {}; // 記錄打包與出貨狀態 { "買家名_團名_商品ID": { packed: true, shipped: false } }
 
 try {
-  const saved = localStorage.getItem('pika_multigroup_data');
+  const saved = localStorage.getItem('pika_multigroup_data_v3');
   if(saved) uploadedGroups = JSON.parse(saved);
-  const savedStates = localStorage.getItem('pika_multigroup_states');
-  if(savedStates) buyerStates = JSON.parse(savedStates);
 } catch(e) {
   uploadedGroups = [];
 }
@@ -120,15 +113,23 @@ function handleFilesUpload(input){
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
-        if(data && data.groupName && Array.isArray(data.items)){
-          // 檢查是否已存在同名團，若有則覆蓋更新
-          const existingIndex = uploadedGroups.findIndex(g => g.groupName === data.groupName);
+        
+        // 智慧相容各種格式（支援 items、buyData 等）
+        let gName = data.groupName || data.currentCamp || file.name.replace('.json', '');
+        let gItems = data.items || data.buyData || [];
+        
+        if(Array.isArray(gItems) && gItems.length > 0){
+          const groupObj = { groupName: gName, items: gItems };
+          const existingIndex = uploadedGroups.findIndex(g => g.groupName === gName);
           if(existingIndex >= 0) {
-            uploadedGroups[existingIndex] = data;
+            uploadedGroups[existingIndex] = groupObj;
           } else {
-            uploadedGroups.push(data);
+            uploadedGroups.push(groupObj);
           }
+        } else {
+          alert(`檔案 ${file.name} 內找不到有效的商品資料！`);
         }
+        
         loadedCount++;
         if(loadedCount === files.length){
           saveData();
@@ -140,7 +141,7 @@ function handleFilesUpload(input){
           input.value = "";
         }
       } catch(err) {
-        alert(`檔案 ${file.name} 格式錯誤！`);
+        alert(`檔案 ${file.name} 格式錯誤或無法解析！`);
       }
     };
     reader.readAsText(file);
@@ -148,8 +149,7 @@ function handleFilesUpload(input){
 }
 
 function saveData(){
-  localStorage.setItem('pika_multigroup_data', JSON.stringify(uploadedGroups));
-  localStorage.setItem('pika_multigroup_states', JSON.stringify(buyerStates));
+  localStorage.setItem('pika_multigroup_data_v3', JSON.stringify(uploadedGroups));
 }
 
 function updateCampDropdown(){
@@ -175,22 +175,26 @@ function renderTab1(){
     return;
   }
   
-  // 依照買家分組顯示
   const buyersMap = {};
   group.items.forEach(item => {
-    const b = item.friend || '未分類';
+    const b = item.friend || item.buyerName || '未分類';
     if(!buyersMap[b]) buyersMap[b] = [];
     buyersMap[b].push(item);
   });
   
   let html = '';
   for(let buyer in buyersMap){
-    let itemsHtml = buyersMap[buyer].map(i => `
-      <div class="item-row">
-        <div style="flex:1;font-size:0.9rem;">${i.name} x ${i.qty || 1}</div>
-        <div style="font-size:0.85rem;color:#b87c53;">${i.price * (i.qty || 1)}円</div>
-      </div>
-    `).join('');
+    let itemsHtml = buyersMap[buyer].map(i => {
+      let itemName = i.name || i.role || '商品';
+      let itemQty = i.qty || 1;
+      let itemPrice = i.price || 0;
+      return `
+        <div class="item-row">
+          <div style="flex:1;font-size:0.9rem;">${itemName} x ${itemQty}</div>
+          <div style="font-size:0.85rem;color:#b87c53;">${itemPrice * itemQty}円</div>
+        </div>
+      `;
+    }).join('');
     
     html += `
       <div class="group-card open">
@@ -219,13 +223,11 @@ function renderTab2(){
     return;
   }
   
-  // 彙整所有買家跨團資料
-  // structure: { "買家名": [ { groupName, item } ] }
   const allBuyers = {};
   uploadedGroups.forEach(group => {
     if(group.items){
       group.items.forEach(item => {
-        const b = item.friend || '未分類';
+        const b = item.friend || item.buyerName || '未分類';
         if(!allBuyers[b]) allBuyers[b] = [];
         allBuyers[b].push({ groupName: group.groupName, item: item });
       });
@@ -236,19 +238,19 @@ function renderTab2(){
   for(let buyer in allBuyers){
     let buyerItems = allBuyers[buyer];
     
-    // 如果有關鍵字，過濾買家名字或商品名稱
     if(keyword){
       const matchBuyer = buyer.toLowerCase().includes(keyword);
-      const matchItem = buyerItems.some(bi => bi.item.name.toLowerCase().includes(keyword));
+      const matchItem = buyerItems.some(bi => {
+        let iName = bi.item.name || bi.item.role || '';
+        return iName.toLowerCase().includes(keyword);
+      });
       if(!matchBuyer && !matchItem) continue;
     }
     
-    // 計算該買家跨團總金額
     let totalJPY = 0;
     let groupBreakdownHtml = '';
-    
-    // 依團別再細分
     const groupMap = {};
+    
     buyerItems.forEach(bi => {
       if(!groupMap[bi.groupName]) groupMap[bi.groupName] = [];
       groupMap[bi.groupName].push(bi.item);
@@ -256,9 +258,12 @@ function renderTab2(){
     
     for(let gName in groupMap){
       let gItemsHtml = groupMap[gName].map(i => {
-        let p = i.price * (i.qty || 1);
+        let iName = i.name || i.role || '商品';
+        let iQty = i.qty || 1;
+        let iPrice = i.price || 0;
+        let p = iPrice * iQty;
         totalJPY += p;
-        return `<div style="font-size:0.85rem;color:#555;padding-left:10px;">• ${i.name} x ${i.qty || 1} (${p}円)</div>`;
+        return `<div style="font-size:0.85rem;color:#555;padding-left:10px;">• ${iName} x ${iQty} (${p}円)</div>`;
       }).join('');
       
       groupBreakdownHtml += `
@@ -316,13 +321,16 @@ function copyBuyerSummary(buyerName){
   
   uploadedGroups.forEach(group => {
     if(group.items){
-      let items = group.items.filter(i => i.friend === buyerName);
+      let items = group.items.filter(i => (i.friend || i.buyerName) === buyerName);
       if(items.length > 0){
         text += `\n[${group.groupName}]:\n`;
         items.forEach(i => {
-          let p = i.price * (i.qty || 1);
+          let iName = i.name || i.role || '商品';
+          let iQty = i.qty || 1;
+          let iPrice = i.price || 0;
+          let p = iPrice * iQty;
           total += p;
-          text += `- ${i.name} x ${i.qty || 1}：${p}円\n`;
+          text += `- ${iName} x ${iQty}：${p}円\n`;
         });
       }
     }
