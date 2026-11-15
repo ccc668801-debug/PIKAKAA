@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pokepeace 綜合代購與盲盒戰情室</title>
-  
+  <title>Pokepeace 跨團總對帳與出貨整合工具</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Fredoka:wght@400;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
-  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-
   <script>
     tailwind.config = {
       theme: {
@@ -42,7 +39,6 @@
       }
     }
   </script>
-
   <style>
     body {
       background-color: #FFFDF2;
@@ -65,503 +61,340 @@
     .pika-card-border {
       border: 2px solid #FFE8C8;
     }
-    .view-section { display: none; }
-    .view-section.active { display: block; }
-    .friend-group.open .friend-content { display: block; }
-    .friend-content { display: none; }
-    .deduct-box { display: none; background: #FFF9E6; padding: 10px; border-radius: 12px; margin-top: 6px; border: 1px dashed #F7C948; }
-    .deduct-box.show { display: block; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #FFF9E6; }
-    ::-webkit-scrollbar-thumb { background: #FFD2A6; border-radius: 10px; }
   </style>
 </head>
 <body class="min-h-screen pb-10">
 
-  <!-- 頂部導覽列 (4個分頁) -->
-  <header class="bg-[#FFEAEB] border-b-2 border-[#FFC1C5] sticky top-0 z-50 px-3 py-2 shadow-sm">
+  <header class="bg-[#FFEAEB] border-b-2 border-[#FFC1C5] sticky top-0 z-50 px-3 py-2.5 shadow-sm">
     <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="text-xl">⚡</span>
-        <div>
-          <h1 class="text-base md:text-lg font-bold font-title-style text-[#FF7E67] tracking-wider leading-none">
-            Pokepeace 綜合戰情室
-          </h1>
-        </div>
+        <h1 class="text-lg md:text-xl font-bold font-title-style text-[#FF7E67] tracking-wider leading-none">
+          Pokepeace 跨團總對帳
+        </h1>
       </div>
-
-      <!-- Tab Navigation Buttons -->
-      <div class="flex flex-wrap items-center gap-1 bg-white/80 p-1 rounded-2xl border border-[#FFC1C5]">
-        <button onclick="switchTab('buyList', this)" class="nav-item px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all bg-[#FF7E67] text-white pika-btn-shadow active">
-          <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
-          <span>快閃代購</span>
-        </button>
-        <button onclick="switchTab('rank', this)" class="nav-item px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all text-pika-textMain hover:bg-[#FFF3B8]">
-          <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i>
-          <span>排單順序</span>
-        </button>
-        <button onclick="switchTab('pack', this)" class="nav-item px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all text-pika-textMain hover:bg-[#FFF3B8]">
-          <i data-lucide="package-open" class="w-3.5 h-3.5"></i>
-          <span>卡片分配</span>
-        </button>
-        <button onclick="switchTab('summary', this)" class="nav-item px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all text-pika-textMain hover:bg-[#FFF3B8]">
-          <i data-lucide="users" class="w-3.5 h-3.5 text-pika-accent"></i>
-          <span>買家總整理</span>
-        </button>
+      <div class="flex items-center gap-2">
+        <span id="loadedGroupsBadge" class="bg-white text-pika-textMain font-bold text-xs px-2.5 py-1 rounded-xl border border-[#FFC1C5]">
+          尚未匯入檔案
+        </span>
       </div>
     </div>
   </header>
 
   <main class="max-w-5xl mx-auto px-3 mt-4 space-y-4">
 
-    <!-- VIEW 1: 快閃代購清單 (來自檔案1) -->
-    <section id="buyListView" class="view-section active space-y-4">
-      <!-- 新增商品表單 -->
-      <div class="bg-white rounded-2xl p-4 pika-card-border pika-shadow space-y-3">
-        <h2 class="text-base font-bold text-pika-textMain flex items-center gap-1.5 border-b border-[#FFE8C8] pb-2">
-          <i data-lucide="plus-circle" class="w-4 h-4 text-pika-accent"></i>
-          新增代購商品
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="block text-[11px] font-bold text-pika-textSub mb-1">買家姓名</label>
-            <select id="friendSelect" class="w-full px-3 py-2 rounded-xl border-2 border-[#FFE8C8] bg-white text-xs font-bold outline-none"></select>
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-pika-textSub mb-1">商品名稱</label>
-            <input type="text" id="itemName" placeholder="例如: 皮卡丘玩偶" class="w-full px-3 py-2 rounded-xl border-2 border-[#FFE8C8] text-xs font-bold outline-none">
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-pika-textSub mb-1">日幣單價 (円)</label>
-            <input type="number" id="itemPrice" placeholder="0" class="w-full px-3 py-2 rounded-xl border-2 border-[#FFE8C8] text-xs font-bold outline-none">
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-pika-textSub mb-1">數量</label>
-            <input type="number" id="itemQty" value="1" min="1" class="w-full px-3 py-2 rounded-xl border-2 border-[#FFE8C8] text-xs font-bold outline-none">
-          </div>
-        </div>
+    <!-- 檔案上傳區 -->
+    <div class="bg-white rounded-2xl p-4 pika-card-border pika-shadow space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#FFE8C8] pb-2.5">
         <div>
-          <label class="block text-[11px] font-bold text-pika-textSub mb-1">備註 (例如款式/顏色)</label>
-          <input type="text" id="itemNote" placeholder="選填備註..." class="w-full px-3 py-2 rounded-xl border-2 border-[#FFE8C8] text-xs font-bold outline-none">
+          <h2 class="text-base md:text-lg font-bold text-pika-textMain flex items-center gap-1.5">
+            <i data-lucide="folder-plus" class="w-5 h-5 text-pika-accent"></i>
+            上傳各團匯出的 .json 檔案
+          </h2>
+          <p class="text-[11px] text-pika-textSub mt-0.5">可一次複選多個檔案（第1團、第2團、第3團），系統會自動依買家姓名合併所有卡片與金額！</p>
         </div>
-        <button onclick="saveItem()" class="w-full py-2.5 rounded-xl bg-[#FF7E67] text-white font-bold text-xs pika-btn-shadow hover:bg-[#FF6B52]">
-          加入代購清單
+        <div class="flex items-center gap-1.5">
+          <label class="text-xs font-bold text-pika-textSub">單張金額 $</label>
+          <input type="number" id="unitPriceInput" value="55" onchange="renderMergedResult()" class="w-16 px-2 py-1 rounded-lg border-2 border-[#FFE8C8] bg-[#FFFDF2] font-bold text-xs text-center outline-none focus:border-[#FF7E67]">
+        </div>
+      </div>
+
+      <label class="flex flex-col items-center justify-center w-full h-28 border-2 border-[#FFC1C5] border-dashed rounded-2xl cursor-pointer bg-[#FFFDF2] hover:bg-[#FFEAEB]/40 transition-all">
+        <div class="flex flex-col items-center justify-center py-4">
+          <i data-lucide="upload-cloud" class="w-7 h-7 text-pika-accent mb-1"></i>
+          <p class="text-xs sm:text-sm font-bold text-pika-accent">點擊選取多個團的 .json 檔案（可一次全選）</p>
+          <p class="text-[11px] text-pika-textSub mt-0.5">支援同時匯入已分配開卡紀錄與原始喊單明細</p>
+        </div>
+        <input id="fileInput" type="file" accept=".json" multiple class="hidden" onchange="handleFiles(this.files)">
+      </label>
+
+      <div id="groupTagsContainer" class="flex flex-wrap gap-1.5"></div>
+    </div>
+
+    <!-- 篩選與顯示切換 -->
+    <div id="controlBar" class="hidden bg-white rounded-2xl p-3.5 pika-card-border pika-shadow flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-1.5 bg-[#FFFDF2] p-1 rounded-xl border border-[#FFE8C8]">
+        <button id="modeAllocatedBtn" onclick="setViewMode('allocated')" class="px-3 py-1 rounded-lg text-xs font-bold bg-[#FF7E67] text-white transition-all">
+          🎉 已分到卡片總覽（出貨用）
+        </button>
+        <button id="modeOrderedBtn" onclick="setViewMode('ordered')" class="px-3 py-1 rounded-lg text-xs font-bold text-pika-textMain hover:bg-[#FFF3B8] transition-all">
+          📝 原始喊單總覽（排單用）
         </button>
       </div>
 
-      <!-- 買家代購清單總覽 -->
-      <div class="bg-white rounded-2xl p-4 pika-card-border pika-shadow space-y-3">
-        <div class="flex items-center justify-between border-b border-[#FFE8C8] pb-2">
-          <h3 class="text-base font-bold text-pika-textMain">買家代購明細與尾款</h3>
-          <span class="text-xs font-bold text-pika-textSub">匯率設定: <span id="currentRateLabel">0.22</span></span>
+      <div class="flex items-center gap-2">
+        <div class="relative flex items-center">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-pika-textSub absolute left-2 pointer-events-none"></i>
+          <input type="text" id="searchInput" oninput="renderMergedResult()" placeholder="搜尋買家姓名..." class="pl-7 pr-2.5 py-1 text-xs font-bold rounded-lg border border-[#FFE8C8] bg-[#FFFDF2] focus:bg-white focus:border-[#FF7E67] outline-none w-40 sm:w-48">
         </div>
-        <div id="friendList" class="space-y-3"></div>
+        <span id="buyerCountBadge" class="bg-[#FFF3B8] text-pika-textMain font-bold text-xs px-2.5 py-1 rounded-full border border-[#F7C948]">
+          共 0 位
+        </span>
       </div>
-    </section>
+    </div>
 
-    <!-- VIEW 2: 排單順序表 (來自檔案2) -->
-    <section id="rankView" class="view-section space-y-4">
-      <div class="bg-white rounded-2xl p-4 pika-card-border pika-shadow space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#FFE8C8] pb-3">
-          <div>
-            <h2 class="text-base md:text-lg font-bold text-pika-textMain flex items-center gap-1.5">
-              <i data-lucide="settings-2" class="w-4 h-4 text-pika-accent"></i>
-              盲盒卡片名稱與冷門角色管理
-            </h2>
-            <p class="text-[11px] text-pika-textSub mt-0.5">規則：冷門角色數量（多者優先） ＞ 總喊單數量（多者優先） ＞ 留言時間先後</p>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <button onclick="openCardManageModal()" class="bg-[#FFF3B8] text-pika-textMain font-bold px-2.5 py-1.5 rounded-xl text-xs border border-[#F7C948]">自定義卡片</button>
-            <button onclick="resetAllDataToDefault()" class="bg-gray-100 text-pika-textSub font-bold px-2.5 py-1.5 rounded-xl text-xs border border-gray-300">重置</button>
-            <button onclick="openAddBuyerModal()" class="bg-[#FFDEE2] text-pika-textMain font-bold px-2.5 py-1.5 rounded-xl text-xs border border-[#FFB0B5]">新增買家</button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-[#FFFDF2] p-3 rounded-xl border border-[#FFE8C8]">
-          <div>
-            <span class="text-[11px] font-bold text-pika-accent block mb-1.5">🌸 A區 冷門角色：</span>
-            <div id="coldAContainer" class="flex flex-wrap gap-1.5"></div>
-          </div>
-          <div>
-            <span class="text-[11px] font-bold text-pika-accent block mb-1.5">🌼 B區 冷門角色：</span>
-            <div id="coldBContainer" class="flex flex-wrap gap-1.5"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-2xl p-4 pika-card-border pika-shadow space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#FFE8C8] pb-2.5">
-          <div class="flex items-center gap-2">
-            <h3 class="text-base font-bold text-pika-textMain">買家即時排單列表</h3>
-            <span id="buyerTotalBadge" class="bg-[#FFF3B8] font-bold text-xs px-2 py-0.5 rounded-full border border-[#F7C948]">共 0 位買家</span>
-          </div>
-          <div class="relative flex items-center">
-            <input type="text" id="searchBuyerInput" oninput="renderRankings()" placeholder="搜尋買家姓名..." class="pl-7 pr-2.5 py-1 text-xs font-bold rounded-lg border border-[#FFE8C8] bg-[#FFFDF2] outline-none w-40">
-          </div>
-        </div>
-        <div id="accordionBuyerList" class="space-y-2"></div>
-      </div>
-    </section>
-
-    <!-- VIEW 3: 卡片分配 (來自檔案2) -->
-    <section id="packView" class="view-section space-y-4">
-      <div class="bg-white rounded-2xl p-4 pika-card-border pika-shadow space-y-3">
-        <div class="border-b border-[#FFE8C8] pb-2.5">
-          <h2 class="text-base font-bold text-pika-textMain flex items-center gap-1.5">
-            <i data-lucide="package-search" class="w-4 h-4 text-pika-accent"></i>
-            點選卡片直接分配發貨：
-          </h2>
-        </div>
-        <div class="space-y-2.5">
-          <div>
-            <span class="text-[11px] font-bold text-[#FF7E67] block mb-1">🌸 A區 卡片：</span>
-            <div id="packCardsA" class="flex flex-wrap gap-1.5"></div>
-          </div>
-          <div>
-            <span class="text-[11px] font-bold text-[#FF7E67] block mb-1">🌼 B區 卡片：</span>
-            <div id="packCardsB" class="flex flex-wrap gap-1.5"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-2xl p-4 pika-card-border pika-shadow space-y-3">
-        <div class="flex items-center justify-between border-b border-[#FFE8C8] pb-2.5">
-          <h3 class="text-base font-bold text-pika-textMain">開卡分配紀錄</h3>
-          <button onclick="clearMatchRecords()" class="bg-[#FFDEE2] text-pika-accent font-bold px-2.5 py-1 rounded-lg text-xs border border-[#FFB0B5]">清空紀錄</button>
-        </div>
-        <div id="matchLogList" class="space-y-2 max-h-[350px] overflow-y-auto pr-1">
-          <div class="text-center py-6 text-pika-textSub text-xs">尚未開卡</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- VIEW 4: 買家總整理 (戰情室彙整) -->
-    <section id="summaryView" class="view-section space-y-4">
-      <div class="bg-white rounded-2xl p-4 pika-card-border pika-shadow space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#FFE8C8] pb-3">
-          <div>
-            <h2 class="text-base md:text-lg font-bold text-pika-textMain flex items-center gap-1.5">
-              <i data-lucide="users" class="w-5 h-5 text-pika-accent"></i>
-              買家綜合戰情總整理
-            </h2>
-            <p class="text-[11px] text-pika-textSub mt-0.5">自動串聯「快閃代購商品」與「盲盒分配卡片（每張$55）」</p>
-          </div>
-          <input type="text" id="searchSummaryInput" oninput="renderBuyerSummaryTab()" placeholder="搜尋買家..." class="px-3 py-1.5 text-xs font-bold rounded-xl border border-[#FFE8C8] bg-[#FFFDF2] outline-none w-40">
-        </div>
-        <div id="buyerSummaryCardList" class="space-y-3"></div>
-      </div>
-    </section>
+    <!-- 整合結果列表 -->
+    <div id="resultGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
 
   </main>
 
-  <!-- Modal: 新增/編輯買家 -->
-  <div id="buyerModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 pika-card-border pika-shadow space-y-3 relative">
-      <button onclick="closeBuyerModal()" class="absolute top-3 right-3 text-pika-textSub"><i data-lucide="x" class="w-5 h-5"></i></button>
-      <h3 id="modalTitle" class="text-base font-bold text-pika-textMain">新增買家</h3>
-      <form onsubmit="handleBuyerSubmit(event)" class="space-y-2.5">
-        <input type="hidden" id="editBuyerId">
-        <div><label class="block text-[11px] font-bold text-pika-textSub mb-0.5">順序編號 (#)</label><input type="number" id="buyerOrderNo" required class="w-full px-3 py-2 rounded-xl border-2 border-[#FFE8C8] text-xs font-bold outline-none"></div>
-        <div><label class="block text-[11px] font-bold text-pika-textSub mb-0.5">買家名稱</label><input type="text" id="buyerName" required class="w-full px-3 py-2 rounded-xl border-2 border-[#FFE8C8] text-xs font-bold outline-none"></div>
-        <div><label class="block text-[11px] font-bold text-pika-textSub mb-0.5">喊單內容</label><textarea id="buyerContent" rows="3" required class="w-full px-3 py-2 rounded-xl border-2 border-[#FFE8C8] text-xs font-bold outline-none"></textarea></div>
-        <button type="submit" class="w-full py-2 rounded-xl bg-[#FF7E67] text-white font-bold text-xs pika-btn-shadow">儲存</button>
-      </form>
-    </div>
-  </div>
-
   <script>
-    // 資料初始化 (結合代購與盲盒)
-    let rate = 0.22;
-    let buyData = JSON.parse(localStorage.getItem('pika_v17_data')) || [];
-    let paidData = JSON.parse(localStorage.getItem('pika_v17_paid')) || {};
-    let openGroups = JSON.parse(localStorage.getItem('pika_v17_open')) || {};
-
-    const INITIAL_DEFAULT_CARDS = {
-      A: ['皮卡丘', '波加曼', '炎兔兒', '木木梟', '妙喵', '皮丘', '一對鼠', '小仙奶', '霜奶仙', '基拉祈', '迷你Q', '胖丁', '正負電拍拍'],
-      B: ['皮卡丘', '波加曼', '炎兔兒', '木木梟', '妙喵', '皮丘', '一對鼠', '小卡比', '霜奶仙', '迷你Q', '胖丁', '電飛鼠', '全家福']
-    };
-    const INITIAL_DEFAULT_COLD = { A: ['一對鼠', '妙喵', '電飛鼠', '小仙奶', '皮丘'], B: ['妙喵', '一對鼠', '炎兔兒', '小卡比'] };
-    const INITIAL_DEFAULT_BUYERS = [
-      { id: 21, orderNo: 21, name: '於九里', content: 'AB波加曼各2+AB一對鼠各1+A區小仙奶1+AB妙喵各1+A區電飛鼠1' },
-      { id: 2, orderNo: 2, name: '簡慈萱', content: 'AB 一對鼠 妙貓 迷你Q 小卡比' },
-      { id: 18, orderNo: 18, name: '施姵穎', content: 'A 皮卡丘 皮丘 霜奶仙 迷你Q 電飛鼠 基拉祈 B 皮卡丘 迷你Q 全家福' },
-      { id: 5, orderNo: 5, name: 'Shin Tamed', content: 'A小仙奶、霜奶仙、胖丁、炎兔兒 B胖丁、炎兔兒' },
-      { id: 4, orderNo: 4, name: '婉琪', content: 'AB 波加曼 妙貓 B妙貓' },
-      { id: 19, orderNo: 19, name: '倪瑋翔', content: 'A區 一對鼠 基拉祈 迷你Q B區一對鼠 迷你Q' },
-      { id: 15, orderNo: 15, name: 'Yun yuan', content: 'A波加曼、基拉祈、謎擬Q、小卡比、正電拍拍、負電拍拍、皮丘' },
-      { id: 9, orderNo: 9, name: '葉宜庭', content: 'A 基拉祈 電飛鼠' },
-      { id: 13, orderNo: 13, name: '林子家', content: 'AB小卡比' },
-      { id: 20, orderNo: 20, name: 'Selena Lopez', content: 'AB炎兔兒可全收' },
-      { id: 16, orderNo: 16, name: '結成ゆリ', content: 'AB胖丁 （可收全胖丁）' },
-      { id: 17, orderNo: 17, name: '李毓欽', content: 'A基拉祈 波加曼 小卡比獸 正負電拍拍 胖丁 B波加曼 全家福' },
-      { id: 7, orderNo: 7, name: 'Gokudera', content: 'A皮卡丘，負電拍拍，胖丁，B皮卡丘，胖丁，全家福' },
-      { id: 14, orderNo: 14, name: 'Tea Fish', content: 'A 基拉祈 （最多可收6）' },
-      { id: 1, orderNo: 1, name: 'Cheng Angel', content: 'AB波加曼' },
-      { id: 3, orderNo: 3, name: 'Shiruku', content: 'AB 木木梟' },
-      { id: 8, orderNo: 8, name: '陳珏儜', content: 'AB木木梟' },
-      { id: 11, orderNo: 11, name: 'Xu Yixin', content: 'AB迷你Q' },
-      { id: 6, orderNo: 6, name: '黃怡臻', content: 'A基拉祈' },
-      { id: 10, orderNo: 10, name: '關東組', content: 'A炎兔兒' },
-      { id: 12, orderNo: 12, name: 'Pimi Xiao', content: 'A 霜奶仙' }
-    ];
-
-    let ALL_26_CARDS = JSON.parse(localStorage.getItem('poke_cards')) || INITIAL_DEFAULT_CARDS;
-    let coldRoles = JSON.parse(localStorage.getItem('poke_cold')) || INITIAL_DEFAULT_COLD;
-    let buyersData = JSON.parse(localStorage.getItem('poke_buyers')) || INITIAL_DEFAULT_BUYERS;
-    let matchRecords = JSON.parse(localStorage.getItem('poke_records')) || [];
-
-    // 自動把代購清單與盲盒買家名單結合為唯一的買家清單
-    function getAllFriends() {
-      let set = new Set();
-      buyersData.forEach(b => set.add(b.name));
-      buyData.forEach(i => { if(i.friend) set.add(i.friend); });
-      return Array.from(set);
-    }
-
-    function saveDataToStorage() {
-      localStorage.setItem('pika_v17_data', JSON.stringify(buyData));
-      localStorage.setItem('poke_cards', JSON.stringify(ALL_26_CARDS));
-      localStorage.setItem('poke_cold', JSON.stringify(coldRoles));
-      localStorage.setItem('poke_buyers', JSON.stringify(buyersData));
-      localStorage.setItem('poke_records', JSON.stringify(matchRecords));
-    }
+    let loadedGroups = [];
+    let viewMode = 'allocated';
+    let mergedStates = JSON.parse(localStorage.getItem('poke_merged_states')) || {};
 
     window.onload = () => {
       lucide.createIcons();
-      updateFriendSelect();
-      renderList();
-      renderColdRoleBadges();
-      renderRankings();
-      renderPackCards();
-      renderMatchRecords();
-      renderBuyerSummaryTab();
     };
 
-    function switchTab(tabId, btnEl) {
-      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-      document.getElementById(tabId + 'View').classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(n => {
-        n.classList.remove('bg-[#FF7E67]', 'text-white', 'pika-btn-shadow');
-        n.classList.add('text-pika-textMain', 'hover:bg-[#FFF3B8]');
-      });
-      if(btnEl) {
-        btnEl.classList.remove('text-pika-textMain', 'hover:bg-[#FFF3B8]');
-        btnEl.classList.add('bg-[#FF7E67]', 'text-white', 'pika-btn-shadow');
+    function saveMergedStates() {
+      localStorage.setItem('poke_merged_states', JSON.stringify(mergedStates));
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      const btnAlloc = document.getElementById('modeAllocatedBtn');
+      const btnOrder = document.getElementById('modeOrderedBtn');
+      if (mode === 'allocated') {
+        btnAlloc.className = "px-3 py-1 rounded-lg text-xs font-bold bg-[#FF7E67] text-white transition-all";
+        btnOrder.className = "px-3 py-1 rounded-lg text-xs font-bold text-pika-textMain hover:bg-[#FFF3B8] transition-all";
+      } else {
+        btnOrder.className = "px-3 py-1 rounded-lg text-xs font-bold bg-[#FF7E67] text-white transition-all";
+        btnAlloc.className = "px-3 py-1 rounded-lg text-xs font-bold text-pika-textMain hover:bg-[#FFF3B8] transition-all";
       }
-      if(tabId === 'summary') renderBuyerSummaryTab();
+      renderMergedResult();
     }
 
-    function updateFriendSelect() {
-      const select = document.getElementById('friendSelect');
-      const friends = getAllFriends();
-      if(select) select.innerHTML = friends.map(f => `<option value="${f}">${f}</option>`).join('');
-    }
+    async function handleFiles(files) {
+      if (!files.length) return;
+      loadedGroups = [];
 
-    function saveItem() {
-      const nameEl = document.getElementById('itemName');
-      const priceEl = document.getElementById('itemPrice');
-      const qtyEl = document.getElementById('itemQty');
-      const friendEl = document.getElementById('friendSelect');
-      const noteEl = document.getElementById('itemNote');
-
-      if(!nameEl || !nameEl.value.trim()) return alert("請輸入商品名稱！");
-      
-      buyData.push({
-        id: Date.now(),
-        friend: friendEl ? friendEl.value : (getAllFriends()[0] || '未分類'),
-        name: nameEl.value.trim(),
-        price: parseFloat(priceEl.value) || 0,
-        qty: parseInt(qtyEl.value) || 1,
-        boughtQty: parseInt(qtyEl.value) || 1,
-        note: noteEl ? noteEl.value : '',
-        status: 'normal',
-        isTaxFree: false
-      });
-      saveDataToStorage();
-      alert("✅ 商品已加入代購清單！");
-      nameEl.value = ""; priceEl.value = ""; if(noteEl) noteEl.value = "";
-      renderList();
-      updateFriendSelect();
-    }
-
-    function renderList() {
-      const listDiv = document.getElementById('friendList');
-      if(!listDiv) return;
-      listDiv.innerHTML = "";
-      const groups = {};
-
-      buyData.forEach(i => {
-        if(!groups[i.friend]) groups[i.friend] = { items: [], totalJPY: 0 };
-        groups[i.friend].items.push(i);
-        groups[i.friend].totalJPY += (i.price * (i.boughtQty || i.qty || 1));
-      });
-
-      const friends = getAllFriends();
-      friends.forEach(f => {
-        const data = groups[f] || { items: [], totalJPY: 0 };
-        const finalTWD = Math.round(data.totalJPY * rate);
-        const div = document.createElement('div');
-        div.className = 'friend-group border border-[#FFE8C8] rounded-xl p-3 bg-[#FFFDF2] ' + (openGroups[f] ? 'open' : '');
-        
-        div.innerHTML = `
-          <div onclick="toggleAccordion('${f}', this)" class="cursor-pointer flex items-center justify-between font-bold text-sm">
-            <span>👤 ${f} (代購總計: ${data.totalJPY}円 / NT$ ${finalTWD})</span>
-            <span class="text-pika-accent">展開 ▾</span>
-          </div>
-          <div class="friend-content mt-2 pt-2 border-t border-[#FFE8C8] space-y-2">
-            ${data.items.length > 0 ? data.items.map(i => `
-              <div class="bg-white p-2 rounded-lg border border-[#FFE8C8] flex items-center justify-between text-xs">
-                <div>
-                  <span class="font-bold">${i.name}</span> x ${i.qty} 
-                  <span class="text-pika-accent ml-1">${i.price * i.qty}円</span>
-                  ${i.note ? `<span class="text-gray-400 block">備註: ${i.note}</span>` : ''}
-                </div>
-                <button onclick="delItem(${i.id})" class="text-red-400 font-bold px-1">✕</button>
-              </div>
-            `).join('') : '<div class="text-xs text-gray-400">尚無代購商品</div>'}
-          </div>
-        `;
-        listDiv.appendChild(div);
-      });
-    }
-
-    function toggleAccordion(f, el) {
-      const group = el.parentElement;
-      group.classList.toggle('open');
-      openGroups[f] = group.classList.contains('open');
-    }
-
-    function delItem(id) {
-      buyData = buyData.filter(x => x.id !== id);
-      saveDataToStorage();
-      renderList();
-    }
-
-    // 盲盒與排單邏輯 (來自檔案2)
-    function getBuyerCardRequirement(buyer, zone, role) {
-      const text = buyer.content.replace(/\s+/g, '');
-      if (!text) return 0;
-      const roleAlt = role === '妙喵' ? '妙貓' : (role === '迷你Q' ? '謎擬Q' : role);
-      if (!(text.includes(role) || (roleAlt && text.includes(roleAlt)))) return 0;
-      const qtyRegex = new RegExp(`(?:${role}|${roleAlt})(?:各)?(?:區)?(\\d+)`);
-      const qtyMatch = text.match(qtyRegex);
-      if (qtyMatch) return parseInt(qtyMatch[1], 10);
-      return 1;
-    }
-
-    function parseBuyerOrder(buyer) {
-      let coldCount = 0, totalQty = 0, itemsA = [], itemsB = [];
-      ALL_26_CARDS.A.forEach(role => {
-        const req = getBuyerCardRequirement(buyer, 'A', role);
-        if (req > 0) { for(let i=0; i<req; i++) itemsA.push(role); totalQty += req; if (coldRoles.A.includes(role)) coldCount += req; }
-      });
-      ALL_26_CARDS.B.forEach(role => {
-        const req = getBuyerCardRequirement(buyer, 'B', role);
-        if (req > 0) { for(let i=0; i<req; i++) itemsB.push(role); totalQty += req; if (coldRoles.B.includes(role)) coldCount += req; }
-      });
-      return { coldCount, totalQty: totalQty || 1, itemsA, itemsB };
-    }
-
-    function getSortedBuyers() {
-      return buyersData.map(b => ({ ...b, ...parseBuyerOrder(b) })).sort((a, b) => {
-        if (b.coldCount !== a.coldCount) return b.coldCount - a.coldCount;
-        if (b.totalQty !== a.totalQty) return b.totalQty - a.totalQty;
-        return a.orderNo - b.orderNo;
-      });
-    }
-
-    function renderColdRoleBadges() {
-      document.getElementById('coldAContainer').innerHTML = ALL_26_CARDS.A.map(r => `<span class="px-2 py-0.5 rounded text-xs font-bold ${coldRoles.A.includes(r)?'bg-[#FFDEE2] text-[#FF7E67]':'bg-white'}">${r}</span>`).join('');
-      document.getElementById('coldBContainer').innerHTML = ALL_26_CARDS.B.map(r => `<span class="px-2 py-0.5 rounded text-xs font-bold ${coldRoles.B.includes(r)?'bg-[#FFDEE2] text-[#FF7E67]':'bg-white'}">${r}</span>`).join('');
-    }
-
-    function renderRankings() {
-      const sorted = getSortedBuyers();
-      document.getElementById('buyerTotalBadge').innerText = `共 ${sorted.length} 位買家`;
-      document.getElementById('accordionBuyerList').innerHTML = sorted.map((b, idx) => `
-        <div class="bg-[#FFFDF2] p-3 rounded-xl border border-[#FFE8C8] text-xs">
-          <div class="font-bold text-pika-textMain">第 ${idx+1} 順位 (#${b.orderNo}) ${b.name}</div>
-          <div class="text-gray-500 mt-1">喊單內容：${b.content}</div>
-        </div>
-      `).join('');
-    }
-
-    function renderPackCards() {
-      document.getElementById('packCardsA').innerHTML = ALL_26_CARDS.A.map(role => `<button onclick="handleDrawCard('A', '${role}')" class="px-2 py-1 bg-[#FFF3B8] font-bold text-xs rounded-xl border border-[#F7C948]">A區 ${role}</button>`).join('');
-      document.getElementById('packCardsB').innerHTML = ALL_26_CARDS.B.map(role => `<button onclick="handleDrawCard('B', '${role}')" class="px-2 py-1 bg-[#E0F7FC] font-bold text-xs rounded-xl border border-[#A5E3F3]">B區 ${role}</button>`).join('');
-    }
-
-    function handleDrawCard(zone, role) {
-      const sorted = getSortedBuyers();
-      let matchedBuyer = null;
-      for (let b of sorted) {
-        if (getBuyerCardRequirement(b, zone, role) > 0) {
-          const count = matchRecords.filter(r => r.buyerName === b.name && r.zone === zone && r.role === role).length;
-          if (count < getBuyerCardRequirement(b, zone, role)) { matchedBuyer = b; break; }
+      for (let file of files) {
+        try {
+          const text = await file.text();
+          const data = JSON.parse(text);
+          const fallbackName = file.name.replace(/\.json$/i, '');
+          loadedGroups.push({
+            groupName: data.groupName || fallbackName,
+            buyersData: Array.isArray(data.buyersData) ? data.buyersData : [],
+            matchRecords: Array.isArray(data.matchRecords) ? data.matchRecords : [],
+            buyerStates: data.buyerStates || {}
+          });
+        } catch (err) {
+          alert(`讀取「${file.name}」失敗，請確認這是由代購網頁匯出的 .json 檔案！`);
         }
       }
-      matchRecords.unshift({ id: Date.now(), zone, role, buyerName: matchedBuyer ? matchedBuyer.name : '自留' });
-      saveDataToStorage();
-      renderMatchRecords();
-      renderBuyerSummaryTab();
+
+      document.getElementById('loadedGroupsBadge').innerText = `已匯入 ${loadedGroups.length} 個團`;
+      document.getElementById('controlBar').classList.remove('hidden');
+
+      const tagsContainer = document.getElementById('groupTagsContainer');
+      tagsContainer.innerHTML = loadedGroups.map(g => `
+        <span class="px-2.5 py-1 rounded-lg bg-[#E0F7FC] text-pika-blueText font-bold text-xs border border-[#A5E3F3]">
+          📁 ${g.groupName}（${g.buyersData.length}位買家 / 已配${g.matchRecords.length}張）
+        </span>
+      `).join('');
+
+      renderMergedResult();
     }
 
-    function renderMatchRecords() {
-      const list = document.getElementById('matchLogList');
-      if (matchRecords.length === 0) { list.innerHTML = `<div class="text-center py-6 text-xs text-gray-400">尚未開卡</div>`; return; }
-      list.innerHTML = matchRecords.map(r => `<div class="bg-[#FFFDF2] p-2 rounded border border-[#FFE8C8] text-xs">${r.zone}區 ${r.role} ➡️ 分配給：<strong class="text-pika-accent">${r.buyerName}</strong></div>`).join('');
+    function normalizeName(name) {
+      return (name || '').trim();
     }
 
-    function clearMatchRecords() {
-      if(confirm('確定清空開卡紀錄？')) { matchRecords = []; saveDataToStorage(); renderMatchRecords(); renderBuyerSummaryTab(); }
+    function toggleMergedNotified(buyerName) {
+      if (!mergedStates[buyerName]) mergedStates[buyerName] = {};
+      mergedStates[buyerName].notified = !mergedStates[buyerName].notified;
+      saveMergedStates();
+      renderMergedResult();
     }
 
-    // 買家總整理 (戰情室核心串聯)
-    function renderBuyerSummaryTab() {
-      const container = document.getElementById('buyerSummaryCardList');
-      const friends = getAllFriends();
-      
-      container.innerHTML = friends.map(name => {
-        // 1. 代購商品
-        const items = buyData.filter(i => i.friend === name);
-        let totalJPY = items.reduce((sum, i) => sum + (i.price * (i.qty || 1)), 0);
-        let代購TWD = Math.round(totalJPY * rate);
+    function toggleMergedPacked(buyerName) {
+      if (!mergedStates[buyerName]) mergedStates[buyerName] = {};
+      mergedStates[buyerName].packed = !mergedStates[buyerName].packed;
+      saveMergedStates();
+      renderMergedResult();
+    }
 
-        // 2. 盲盒分配卡片
-        const cards = matchRecords.filter(r => r.buyerName === name);
-        let cardTotalTWD = cards.length * 55;
+    function copyMergedNotice(buyerName, noticeText, btnEl) {
+      navigator.clipboard.writeText(noticeText).then(() => {
+        const orig = btnEl.innerHTML;
+        btnEl.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i><span>已複製！</span>`;
+        btnEl.classList.remove('bg-[#FFDEE2]', 'text-pika-accent');
+        btnEl.classList.add('bg-green-100', 'text-green-600');
+        lucide.createIcons();
+        setTimeout(() => {
+          btnEl.innerHTML = orig;
+          btnEl.classList.remove('bg-green-100', 'text-green-600');
+          btnEl.classList.add('bg-[#FFDEE2]', 'text-pika-accent');
+          lucide.createIcons();
+        }, 1500);
+      }).catch(() => {
+        alert('複製失敗，請手動複製：\n' + noticeText);
+      });
+    }
 
-        return `
-          <div class="bg-[#FFFDF2] rounded-xl border-2 border-[#FFE8C8] p-3.5 space-y-2 shadow-sm">
+    function renderMergedResult() {
+      const grid = document.getElementById('resultGrid');
+      const keyword = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const unitPrice = Number(document.getElementById('unitPriceInput').value) || 55;
+
+      if (viewMode === 'allocated') {
+        const buyerMap = {};
+
+        loadedGroups.forEach(group => {
+          group.matchRecords.forEach(rec => {
+            const bName = normalizeName(rec.buyerName);
+            if (!bName || bName === '自留 / 可釋出') return;
+
+            if (!buyerMap[bName]) {
+              buyerMap[bName] = {
+                buyerName: bName,
+                groups: {},
+                totalCards: 0
+              };
+            }
+            if (!buyerMap[bName].groups[group.groupName]) {
+              buyerMap[bName].groups[group.groupName] = {};
+            }
+            const cardKey = `${rec.zone}區${rec.role}`;
+            buyerMap[bName].groups[group.groupName][cardKey] = (buyerMap[bName].groups[group.groupName][cardKey] || 0) + 1;
+            buyerMap[bName].totalCards += 1;
+          });
+        });
+
+        let list = Object.values(buyerMap);
+        if (keyword) {
+          list = list.filter(b => b.buyerName.toLowerCase().includes(keyword));
+        }
+
+        document.getElementById('buyerCountBadge').innerText = `共 ${list.length} 位有分到卡`;
+
+        if (list.length === 0) {
+          grid.innerHTML = `<div class="col-span-full text-center py-8 bg-white rounded-2xl pika-card-border text-xs text-pika-textSub">目前匯入的檔案中沒有已分配卡片的買家紀錄（可切換到「原始喊單總覽」查看登記內容）</div>`;
+          return;
+        }
+
+        grid.innerHTML = list.map(b => {
+          const totalPrice = b.totalCards * unitPrice;
+          const state = mergedStates[b.buyerName] || {};
+          const isNotified = !!state.notified;
+          const isPacked = !!state.packed;
+
+          const bgStyle = isPacked ? 'bg-[#EBF8FF] border-[#BEE3F8]' : 'bg-white border-[#FFE8C8]';
+          const opacityStyle = isNotified ? 'opacity-45' : 'opacity-100';
+
+          const groupTexts = Object.entries(b.groups).map(([gName, cardsObj]) => {
+            const itemsStr = Object.entries(cardsObj).map(([cName, cnt]) => `${cName}${cnt}張`).join('、');
+            return `【${gName}】${itemsStr}`;
+          });
+          const noticeText = `你好 卡片有排單到 ${groupTexts.join('；')} ，共計 ${b.totalCards} 張（${totalPrice}元），晚點會給你賣貨便下單~`;
+
+          return `
+            <div class="${bgStyle} ${opacityStyle} rounded-2xl p-4 border-2 pika-shadow flex flex-col justify-between space-y-3 transition-all">
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between border-b border-[#FFE8C8] pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="bg-[#FF7E67] text-white font-bold text-xs px-2 py-0.5 rounded-lg">
+                      跨 ${Object.keys(b.groups).length} 團
+                    </span>
+                    <h3 class="font-bold text-pika-textMain text-base">${b.buyerName}</h3>
+                  </div>
+                  <span class="font-extrabold text-pika-accent text-sm">
+                    共 ${b.totalCards} 張 ($${totalPrice})
+                  </span>
+                </div>
+
+                <div class="space-y-2">
+                  ${Object.entries(b.groups).map(([gName, cardsObj]) => `
+                    <div class="bg-[#FFFDF2] p-2.5 rounded-xl border border-[#FFE8C8]">
+                      <span class="text-[11px] font-bold text-pika-blueText block mb-1">📁 ${gName}</span>
+                      <div class="flex flex-wrap gap-1">
+                        ${Object.entries(cardsObj).map(([cName, cnt]) => `
+                          <span class="px-2 py-0.5 rounded-md bg-white border border-[#FFE8C8] text-xs font-bold text-pika-textMain">
+                            ${cName} <span class="text-pika-accent font-extrabold">x${cnt}</span>
+                          </span>
+                        `).join('')}
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-[#FFE8C8] flex items-center justify-end gap-1.5">
+                <button onclick="toggleMergedNotified('${b.buyerName.replace(/'/g, "\\'")}')" class="p-1.5 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all ${isNotified ? 'bg-gray-200 text-gray-700 border-gray-300' : 'bg-white hover:bg-gray-50 text-gray-500 border-[#FFE8C8]'}">
+                  <i data-lucide="${isNotified ? 'check-square' : 'square'}" class="w-3.5 h-3.5 ${isNotified ? 'text-green-600' : ''}"></i>
+                  <span>${isNotified ? '已通知' : '通知'}</span>
+                </button>
+                <button onclick="toggleMergedPacked('${b.buyerName.replace(/'/g, "\\'")}')" class="px-2.5 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all ${isPacked ? 'bg-[#3182CE] text-white border-[#2B6CB0]' : 'bg-white hover:bg-blue-50 text-[#3182CE] border-[#BEE3F8]'}">
+                  <i data-lucide="package-check" class="w-3.5 h-3.5"></i>
+                  <span>${isPacked ? '已打包' : '打包'}</span>
+                </button>
+                <button onclick='copyMergedNotice(${JSON.stringify(b.buyerName)}, ${JSON.stringify(noticeText)}, this)' class="bg-[#FFDEE2] hover:bg-[#FFC1C5] text-pika-accent font-bold px-3 py-1.5 rounded-lg text-xs border border-[#FFB0B5] flex items-center gap-1 transition-all">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>複製通知</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } else {
+        const orderMap = {};
+        loadedGroups.forEach(group => {
+          group.buyersData.forEach(b => {
+            const bName = normalizeName(b.name);
+            if (!bName) return;
+            if (!orderMap[bName]) {
+              orderMap[bName] = {
+                buyerName: bName,
+                entries: []
+              };
+            }
+            orderMap[bName].entries.push({
+              groupName: group.groupName,
+              orderNo: b.orderNo,
+              content: b.content
+            });
+          });
+        });
+
+        let list = Object.values(orderMap);
+        if (keyword) {
+          list = list.filter(b => b.buyerName.toLowerCase().includes(keyword));
+        }
+
+        document.getElementById('buyerCountBadge').innerText = `共 ${list.length} 位登記買家`;
+
+        if (list.length === 0) {
+          grid.innerHTML = `<div class="col-span-full text-center py-8 bg-white rounded-2xl pika-card-border text-xs text-pika-textSub">沒有符合的買家喊單資料</div>`;
+          return;
+        }
+
+        grid.innerHTML = list.map(b => `
+          <div class="bg-white rounded-2xl p-4 border-2 border-[#FFE8C8] pika-shadow space-y-2.5">
             <div class="flex items-center justify-between border-b border-[#FFE8C8] pb-2">
-              <h3 class="font-bold text-base text-pika-textMain">👤 ${name}</h3>
-              <span class="text-xs font-bold bg-[#FFF3B8] px-2 py-0.5 rounded border border-[#F7C948]">
-                總金額：NT$ ${代購TWD + cardTotalTWD}
+              <h3 class="font-bold text-pika-textMain text-base">👤 ${b.buyerName}</h3>
+              <span class="bg-[#FFF3B8] text-pika-textMain font-bold text-xs px-2.5 py-0.5 rounded-full border border-[#F7C948]">
+                參加 ${b.entries.length} 個團
               </span>
             </div>
-
-            <!-- 代購明細 -->
-            <div class="bg-white p-2.5 rounded-lg border border-[#FFE8C8] text-xs">
-              <span class="font-bold text-pika-accent block mb-1">📦 快閃代購品項 (${items.length}件)：</span>
-              ${items.length > 0 ? items.map(i => `<div>- ${i.name} x${i.qty} (${i.price * i.qty}円)</div>`).join('') : '<span class="text-gray-400">無代購商品</span>'}
-            </div>
-
-            <!-- 盲盒卡片明細 -->
-            <div class="bg-white p-2.5 rounded-lg border border-[#FFE8C8] text-xs">
-              <span class="font-bold text-[#FF7E67] block mb-1">🎴 盲盒抽中卡片 (${cards.length}張 / $${cardTotalTWD})：</span>
-              ${cards.length > 0 ? cards.map(c => `<span>[${c.zone}區 ${c.role}]</span>`).join('、') : '<span class="text-gray-400">尚未分配到卡片</span>'}
+            <div class="space-y-2">
+              ${b.entries.map(e => `
+                <div class="bg-[#FFFDF2] p-2.5 rounded-xl border border-[#FFE8C8]">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] font-bold text-pika-accent">📁 ${e.groupName}</span>
+                    <span class="text-[11px] font-bold text-pika-textSub">留言順序 #${e.orderNo}</span>
+                  </div>
+                  <p class="text-xs font-bold text-pika-textMain">${e.content}</p>
+                </div>
+              `).join('')}
             </div>
           </div>
-        `;
-      }).join('');
-    }
+        `).join('');
+      }
 
-    function openAddBuyerModal() { document.getElementById('buyerModal').classList.remove('hidden'); }
-    function closeBuyerModal() { document.getElementById('buyerModal').classList.add('hidden'); }
-    function handleBuyerSubmit(e) {
-      e.preventDefault();
-      buyersData.push({ id: Date.now(), orderNo: parseInt(document.getElementById('buyerOrderNo').value), name: document.getElementById('buyerName').value, content: document.getElementById('buyerContent').value });
-      saveDataToStorage(); closeBuyerModal(); renderRankings(); renderBuyerSummaryTab();
+      lucide.createIcons();
     }
   </script>
 </body>
