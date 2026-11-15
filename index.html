@@ -1,350 +1,436 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Pika 跨團總對帳中心</title>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
-<style>
-:root{--maca-yellow:#FFF2CC;--pika-brown:#5C4033;--bg-color:#FEF9EF;--btn-active:#F3A05F;--tax-red:#FFADAD;--check-green:#A8D5BA;--deduct-bg:#E8F5E9;--ship-purple:#E1D5E7;}
-*{font-family:'Zen Maru Gothic',sans-serif !important;box-sizing:border-box;-webkit-font-smoothing:antialiased;font-weight:700;}
-body{background:var(--bg-color);color:var(--pika-brown);margin:0;padding-bottom:90px;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
-.top-bar{background:#fff;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--maca-yellow);position:sticky;top:0;z-index:1000;width:100%;max-width:420px;}
-.view-section{width:100%;max-width:420px;display:none;padding:0 10px;}
-.active{display:block;}
-.pika-header{font-size:1.4rem;color:var(--btn-active);text-align:center;margin:15px 0;}
-.panel{background:#fff;padding:15px;border-radius:25px;border:3px solid var(--maca-yellow);margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.05);}
-input,textarea,select,button{width:100%;padding:12px;margin:8px 0;border:2px solid #eee;border-radius:15px;font-size:1rem;outline:none;background:#fff;color:var(--pika-brown);}
-.btn-main{background:var(--btn-active);border-radius:20px;border:none;color:white;cursor:pointer;font-size:1.1rem;margin-top:10px;box-shadow:0 4px 0 #d38446;}
-.btn-main:active{transform:translateY(2px);box-shadow:0 2px 0 #d38446;}
-.group-card{margin-bottom:12px;border-radius:20px;border:2.5px solid var(--maca-yellow);background:#fff;overflow:hidden;}
-.group-header{background:var(--maca-yellow);padding:12px 15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
-.group-content{display:none;padding:10px;background:#fff;}
-.group-card.open .group-content{display:block;}
-.item-row{display:flex;align-items:center;padding:10px;border-bottom:1px solid #eee;gap:8px;background:#fff;}
-.btn-sm-action{width:auto !important;padding:4px 10px !important;margin:0 !important;border-radius:8px !important;font-size:0.75rem !important;cursor:pointer;border:1.5px solid #ddd !important;background:#f9f9f9 !important;color:#666 !important;}
-.btn-copy{background:#f5f5f5;border:none;padding:6px 12px;border-radius:12px;font-size:0.85rem;color:#666;cursor:pointer;}
-.bottom-nav{position:fixed;bottom:0;width:100%;max-width:420px;background:#fff;display:flex;justify-content:space-around;padding:10px 10px calc(10px + env(safe-area-inset-bottom));border-top:3px solid var(--maca-yellow);z-index:1000;}
-.nav-item{font-size:.8rem;cursor:pointer;text-align:center;color:#aaa;flex:1;}
-.nav-item.active{color:var(--btn-active);}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokepeace 代購管理與配對工具</title>
+    <style>
+        :root {
+            --primary-color: #d85a86;
+            --primary-light: #ffe6f0;
+            --primary-hover: #ffccd5;
+            --bg-color: #fdf6f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-sub: #666666;
+            --border-color: #f0d5e1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 16px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-sub);
+        }
+
+        /* 控制面板與檔案上傳 */
+        .control-panel {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(216, 90, 134, 0.08);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn, .file-upload-label {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            border: none;
+            font-size: 14px;
+            transition: background 0.2s;
+            display: inline-block;
+        }
+
+        .action-btn:hover, .file-upload-label:hover {
+            background-color: var(--primary-hover);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .group-info {
+            font-size: 14px;
+            color: var(--text-sub);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* 分頁切換頁籤 */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--text-sub);
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 買家清單與卡片 */
+        #buyerContainer, #matchContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .buyer-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .buyer-header {
+            background: var(--primary-light);
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #b03060;
+            user-select: none;
+        }
+
+        .buyer-header:hover {
+            background: var(--primary-hover);
+        }
+
+        .buyer-title-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .order-badge {
+            background: var(--primary-color);
+            color: white;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .buyer-content {
+            padding: 16px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            white-space: pre-wrap;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        .collapsed {
+            display: none;
+        }
+
+        .arrow {
+            transition: transform 0.2s ease;
+            font-size: 12px;
+        }
+
+        .arrow.rotate {
+            transform: rotate(-90deg);
+        }
+
+        /* 配對紀錄表格樣式 */
+        .match-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .match-table th, .match-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .match-table th {
+            background: var(--primary-light);
+            color: #b03060;
+        }
+
+        .match-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 2px dashed var(--border-color);
+        }
+    </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <div style="font-size:0.9rem;font-weight:700;color:var(--pika-brown);">📦 跨團總對帳中心</div>
-  <div style="font-size:0.75rem;color:#aaa;background:#f5f5f5;padding:3px 8px;border-radius:8px;">v3.1</div>
-</div>
+    <header>
+        <h2>🌸 Pokepeace 代購管理與配對工具</h2>
+        <div class="subtitle">未填寫金額品項將自動預設為 55 元統一價</div>
+    </header>
 
-<!-- 分頁一：單團明細檢視 -->
-<div id="tab1View" class="view-section active">
-  <h2 class="pika-header">單團明細檢視</h2>
-  <div class="panel">
-    <label style="font-size:0.85rem;color:#666;">選擇要查看的代購團：</label>
-    <select id="selectCampTab1" onchange="renderTab1()" style="margin-top:5px;"></select>
-  </div>
-  <div id="tab1Content"></div>
-</div>
-
-<!-- 分頁二：跨團總對帳與出貨 -->
-<div id="tab2View" class="view-section">
-  <h2 class="pika-header">跨團總對帳與出貨</h2>
-  <div class="panel" style="padding:12px;">
-    <input type="text" id="globalSearch" placeholder="🔍 搜尋買家姓名或商品名稱..." oninput="renderTab2()" style="margin:0;padding:10px;">
-  </div>
-  <div id="tab2Content"></div>
-</div>
-
-<!-- 分頁三：檔案上傳中心 -->
-<div id="tab3View" class="view-section">
-  <h2 class="pika-header">檔案上傳中心</h2>
-  <div class="panel" style="text-align:center;padding:25px 15px;">
-    <div style="font-size:2.5rem;margin-bottom:10px;">📤</div>
-    <div style="font-size:0.9rem;color:#666;margin-bottom:15px;">請上傳各個代購團匯出的 .json 檔案</div>
-    <button class="btn-main" onclick="document.getElementById('jsonFileInput').click()">選擇並上傳 JSON 檔案</button>
-    <input type="file" id="jsonFileInput" accept=".json" multiple style="display:none" onchange="handleFilesUpload(this)">
-  </div>
-  <div class="panel">
-    <div style="font-size:0.9rem;font-weight:700;margin-bottom:10px;">📋 已上傳的代購團列表：</div>
-    <div id="uploadedCampList" style="display:flex;flex-direction:column;gap:8px;"></div>
-  </div>
-</div>
-
-<nav class="bottom-nav">
-  <div class="nav-item active" onclick="switchTab('tab1',this)"><div>📋</div><span>單團明細</span></div>
-  <div class="nav-item" onclick="switchTab('tab2',this)"><div>⚖️</div><span>跨團對帳</span></div>
-  <div class="nav-item" onclick="switchTab('tab3',this)"><div>📁</div><span>檔案上傳</span></div>
-</nav>
-
-<script>
-let uploadedGroups = [];
-
-try {
-  const saved = localStorage.getItem('pika_multigroup_data_v3');
-  if(saved) uploadedGroups = JSON.parse(saved);
-} catch(e) {
-  uploadedGroups = [];
-}
-
-window.onload = () => {
-  updateCampDropdown();
-  renderTab1();
-  renderTab2();
-  renderUploadedList();
-};
-
-function switchTab(tabId, el){
-  document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-  document.getElementById(tabId + 'View').classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if(el) el.classList.add('active');
-  if(tabId === 'tab1') renderTab1();
-  if(tabId === 'tab2') renderTab2();
-  if(tabId === 'tab3') renderUploadedList();
-}
-
-function handleFilesUpload(input){
-  const files = input.files;
-  if(!files || files.length === 0) return;
-  
-  let loadedCount = 0;
-  Array.from(files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
-        
-        // 智慧相容各種格式（支援 items、buyData 等）
-        let gName = data.groupName || data.currentCamp || file.name.replace('.json', '');
-        let gItems = data.items || data.buyData || [];
-        
-        if(Array.isArray(gItems) && gItems.length > 0){
-          const groupObj = { groupName: gName, items: gItems };
-          const existingIndex = uploadedGroups.findIndex(g => g.groupName === gName);
-          if(existingIndex >= 0) {
-            uploadedGroups[existingIndex] = groupObj;
-          } else {
-            uploadedGroups.push(groupObj);
-          }
-        } else {
-          alert(`檔案 ${file.name} 內找不到有效的商品資料！`);
-        }
-        
-        loadedCount++;
-        if(loadedCount === files.length){
-          saveData();
-          updateCampDropdown();
-          renderTab1();
-          renderTab2();
-          renderUploadedList();
-          alert("✅ 檔案上傳與整合成功！");
-          input.value = "";
-        }
-      } catch(err) {
-        alert(`檔案 ${file.name} 格式錯誤或無法解析！`);
-      }
-    };
-    reader.readAsText(file);
-  });
-}
-
-function saveData(){
-  localStorage.setItem('pika_multigroup_data_v3', JSON.stringify(uploadedGroups));
-}
-
-function updateCampDropdown(){
-  const select = document.getElementById('selectCampTab1');
-  if(!select) return;
-  if(uploadedGroups.length === 0){
-    select.innerHTML = `<option value="">(尚未上傳任何代購團)</option>`;
-    return;
-  }
-  select.innerHTML = uploadedGroups.map(g => `<option value="${g.groupName}">${g.groupName} (${g.items.length}項商品)</option>`).join('');
-}
-
-function renderTab1(){
-  const container = document.getElementById('tab1Content');
-  const select = document.getElementById('selectCampTab1');
-  if(!container || !select) return;
-  
-  const campName = select.value;
-  const group = uploadedGroups.find(g => g.groupName === campName);
-  
-  if(!group || !group.items || group.items.length === 0){
-    container.innerHTML = `<div class="panel" style="text-align:center;color:#aaa;padding:20px;">請先至「檔案上傳」分頁上傳該團 JSON 檔案</div>`;
-    return;
-  }
-  
-  const buyersMap = {};
-  group.items.forEach(item => {
-    const b = item.friend || item.buyerName || '未分類';
-    if(!buyersMap[b]) buyersMap[b] = [];
-    buyersMap[b].push(item);
-  });
-  
-  let html = '';
-  for(let buyer in buyersMap){
-    let itemsHtml = buyersMap[buyer].map(i => {
-      let itemName = i.name || i.role || '商品';
-      let itemQty = i.qty || 1;
-      let itemPrice = i.price || 0;
-      return `
-        <div class="item-row">
-          <div style="flex:1;font-size:0.9rem;">${itemName} x ${itemQty}</div>
-          <div style="font-size:0.85rem;color:#b87c53;">${itemPrice * itemQty}円</div>
+    <!-- 控制面板與檔案上傳/匯出 -->
+    <div class="control-panel">
+        <div class="btn-group">
+            <label class="file-upload-label" for="jsonFile">
+                📁 讀取/上傳團務 JSON 檔案
+            </label>
+            <input type="file" id="jsonFile" accept=".json">
+            <button class="action-btn" id="exportBtn" style="display:none;">💾 匯出目前 JSON 檔案</button>
         </div>
-      `;
-    }).join('');
-    
-    html += `
-      <div class="group-card open">
-        <div class="group-header" onclick="this.parentElement.classList.toggle('open')">
-          <span style="font-weight:700;">👤 ${buyer}</span>
-          <span style="font-size:0.8rem;color:#666;">共 ${buyersMap[buyer].length} 項 ▾</span>
+        <div class="group-info" id="groupInfoText" style="display: none;">
+            <span id="loadedGroupName">群組：尚未載入</span>
+            <span id="loadedCount">買家數：0 位 | 配對紀錄：0 筆</span>
         </div>
-        <div class="group-content" style="display:block;">
-          ${itemsHtml}
-        </div>
-      </div>
-    `;
-  }
-  container.innerHTML = html;
-}
-
-function renderTab2(){
-  const container = document.getElementById('tab2Content');
-  const searchInput = document.getElementById('globalSearch');
-  if(!container) return;
-  
-  const keyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
-  
-  if(uploadedGroups.length === 0){
-    container.innerHTML = `<div class="panel" style="text-align:center;color:#aaa;padding:20px;">目前沒有跨團資料，請先至「檔案上傳」分頁上傳檔案</div>`;
-    return;
-  }
-  
-  const allBuyers = {};
-  uploadedGroups.forEach(group => {
-    if(group.items){
-      group.items.forEach(item => {
-        const b = item.friend || item.buyerName || '未分類';
-        if(!allBuyers[b]) allBuyers[b] = [];
-        allBuyers[b].push({ groupName: group.groupName, item: item });
-      });
-    }
-  });
-  
-  let html = '';
-  for(let buyer in allBuyers){
-    let buyerItems = allBuyers[buyer];
-    
-    if(keyword){
-      const matchBuyer = buyer.toLowerCase().includes(keyword);
-      const matchItem = buyerItems.some(bi => {
-        let iName = bi.item.name || bi.item.role || '';
-        return iName.toLowerCase().includes(keyword);
-      });
-      if(!matchBuyer && !matchItem) continue;
-    }
-    
-    let totalJPY = 0;
-    let groupBreakdownHtml = '';
-    const groupMap = {};
-    
-    buyerItems.forEach(bi => {
-      if(!groupMap[bi.groupName]) groupMap[bi.groupName] = [];
-      groupMap[bi.groupName].push(bi.item);
-    });
-    
-    for(let gName in groupMap){
-      let gItemsHtml = groupMap[gName].map(i => {
-        let iName = i.name || i.role || '商品';
-        let iQty = i.qty || 1;
-        let iPrice = i.price || 0;
-        let p = iPrice * iQty;
-        totalJPY += p;
-        return `<div style="font-size:0.85rem;color:#555;padding-left:10px;">• ${iName} x ${iQty} (${p}円)</div>`;
-      }).join('');
-      
-      groupBreakdownHtml += `
-        <div style="margin:6px 0;font-size:0.9rem;font-weight:700;color:var(--btn-active);">📌 ${gName}</div>
-        ${gItemsHtml}
-      `;
-    }
-    
-    html += `
-      <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:2px solid var(--maca-yellow);padding-bottom:6px;">
-          <span style="font-size:1.05rem;font-weight:700;">👤 ${buyer}</span>
-          <button class="btn-copy" onclick="copyBuyerSummary('${buyer}')">📋 複製明細</button>
-        </div>
-        ${groupBreakdownHtml}
-        <div style="margin-top:10px;text-align:right;font-size:0.95rem;color:#b87c53;font-weight:700;">
-          跨團總計：${totalJPY} 円
-        </div>
-      </div>
-    `;
-  }
-  
-  container.innerHTML = html || `<div class="panel" style="text-align:center;color:#aaa;padding:20px;">找不到符合的買家或商品</div>`;
-}
-
-function renderUploadedList(){
-  const listDiv = document.getElementById('uploadedCampList');
-  if(!listDiv) return;
-  if(uploadedGroups.length === 0){
-    listDiv.innerHTML = `<div style="font-size:0.85rem;color:#aaa;">尚未上傳任何檔案</div>`;
-    return;
-  }
-  listDiv.innerHTML = uploadedGroups.map((g, index) => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9f9f9;border-radius:12px;border:1px solid #eee;">
-      <span style="font-size:0.9rem;">📦 ${g.groupName} (${g.items ? g.items.length : 0}項商品)</span>
-      <button onclick="removeGroup(${index})" class="btn-sm-action" style="background:#ffadad !important;color:white !important;border:none !important;">刪除</button>
     </div>
-  `).join('');
-}
 
-function removeGroup(index){
-  if(confirm("確定要刪除這個已上傳的代購團嗎？")){
-    uploadedGroups.splice(index, 1);
-    saveData();
-    updateCampDropdown();
-    renderTab1();
-    renderTab2();
-    renderUploadedList();
-  }
-}
+    <!-- 功能頁籤切換 -->
+    <div class="tabs" id="tabNav" style="display: none;">
+        <button class="tab-btn active" onclick="switchTab('buyers')">📋 買家登記清單</button>
+        <button class="tab-btn" onclick="switchTab('matches')">⚡ 詳細配對紀錄</button>
+    </div>
 
-function copyBuyerSummary(buyerName){
-  let text = `【${buyerName}】跨團代購明細：\n`;
-  let total = 0;
-  
-  uploadedGroups.forEach(group => {
-    if(group.items){
-      let items = group.items.filter(i => (i.friend || i.buyerName) === buyerName);
-      if(items.length > 0){
-        text += `\n[${group.groupName}]:\n`;
-        items.forEach(i => {
-          let iName = i.name || i.role || '商品';
-          let iQty = i.qty || 1;
-          let iPrice = i.price || 0;
-          let p = iPrice * iQty;
-          total += p;
-          text += `- ${iName} x ${iQty}：${p}円\n`;
+    <!-- 內容展示區塊 -->
+    <div id="buyersTab" class="tab-content active">
+        <div id="buyerContainer">
+            <div class="placeholder-text">請先上方上傳您的代購 JSON 檔案（如 第1團_2.json）</div>
+        </div>
+    </div>
+
+    <div id="matchesTab" class="tab-content">
+        <div id="matchContainer">
+            <div class="placeholder-text">尚無配對紀錄</div>
+        </div>
+    </div>
+
+    <script>
+        let currentAppData = null;
+
+        // 監聽檔案上傳
+        document.getElementById('jsonFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    currentAppData = JSON.parse(e.target.result);
+                    processAndRenderData(currentAppData);
+                    document.getElementById('exportBtn').style.display = 'inline-block';
+                    document.getElementById('tabNav').style.display = 'flex';
+                } catch (error) {
+                    alert('JSON 檔案格式錯誤或無法解析！');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
         });
-      }
-    }
-  });
-  
-  text += `\n------------------\n跨團總金額：${total} 円`;
-  
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(() => alert(`已成功複製 ${buyerName} 的跨團明細！`));
-  } else {
-    alert("複製失敗，請手動複製。");
-  }
-}
-</script>
 
+        // 頁籤切換邏輯
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'buyers') {
+                document.querySelector('.tabs button:nth-child(1)').classList.add('active');
+                document.getElementById('buyersTab').classList.add('active');
+            } else {
+                document.querySelector('.tabs button:nth-child(2)').classList.add('active');
+                document.getElementById('matchesTab').classList.add('active');
+            }
+        }
+
+        // 資料處理與渲染核心
+        function processAndRenderData(data) {
+            // 1. 處理商品價格：未寫金額者全面自動預設為 55 元
+            if (data.buyData && Array.isArray(data.buyData)) {
+                data.buyData = data.buyData.map(item => ({
+                    ...item,
+                    price: (item.price !== undefined && item.price !== null && item.price !== '') ? item.price : 55
+                }));
+            }
+
+            // 更新上方群組資訊
+            const infoBox = document.getElementById('groupInfoText');
+            infoBox.style.display = 'flex';
+            document.getElementById('loadedGroupName').textContent = `群組：${data.groupName || '未命名群組'}`;
+            
+            const buyers = data.buyersData || [];
+            const matches = data.matchRecords || [];
+            document.getElementById('loadedCount').textContent = `買家數：${buyers.length} 位 | 配對紀錄：${matches.length} 筆`;
+
+            // 2. 渲染買家清單（支援折疊功能）
+            renderBuyers(buyers);
+
+            // 3. 渲染完整配對紀錄（保留所有原始配對資料）
+            renderMatches(matches);
+        }
+
+        function renderBuyers(buyers) {
+            const container = document.getElementById('buyerContainer');
+            container.innerHTML = '';
+
+            if (buyers.length === 0) {
+                container.innerHTML = '<div class="placeholder-text">此檔案中沒有找到買家資料 (`buyersData`)。</div>';
+                return;
+            }
+
+            buyers.forEach((buyer, index) => {
+                let isCollapsed = buyer.collapsed || false; // 支援記錄折疊狀態
+
+                const card = document.createElement('div');
+                card.className = 'buyer-card';
+
+                // 標題列（點擊折疊）
+                const header = document.createElement('div');
+                header.className = 'buyer-header';
+                
+                const orderNo = buyer.orderNo || (index + 1);
+                header.innerHTML = `
+                    <div class="buyer-title-info">
+                        <span class="order-badge">#${orderNo}</span>
+                        <span>${buyer.name || '未命名買家'}</span>
+                    </div>
+                    <span class="arrow ${isCollapsed ? 'rotate' : ''}">▼</span>
+                `;
+
+                // 內容區塊
+                const content = document.createElement('div');
+                content.className = `buyer-content ${isCollapsed ? 'collapsed' : ''}`;
+                content.textContent = buyer.content || '無登記內容';
+
+                // 點擊事件：切換收合狀態
+                header.addEventListener('click', function() {
+                    isCollapsed = !isCollapsed;
+                    buyer.collapsed = isCollapsed; // 同步狀態
+                    content.classList.toggle('collapsed', isCollapsed);
+                    header.querySelector('.arrow').classList.toggle('rotate', isCollapsed);
+                });
+
+                card.appendChild(header);
+                card.appendChild(content);
+                container.appendChild(card);
+            });
+        }
+
+        function renderMatches(matches) {
+            const container = document.getElementById('matchContainer');
+            container.innerHTML = '';
+
+            if (matches.length === 0) {
+                container.innerHTML = '<div class="placeholder-text">此檔案中沒有找到配對紀錄 (`matchRecords`)。</div>';
+                return;
+            }
+
+            let tableHTML = `
+                <table class="match-table">
+                    <thead>
+                        <tr>
+                            <th>區域 (Zone)</th>
+                            <th>角色品項</th>
+                            <th>分配買家</th>
+                            <th>編號</th>
+                            <th>時間</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            matches.forEach(match => {
+                tableHTML += `
+                    <tr>
+                        <td><b>${match.zone || '-'}</b></td>
+                        <td>${match.role || '-'}</td>
+                        <td>${match.buyerName || '-'}</td>
+                        <td>${match.buyerOrderNo !== null && match.buyerOrderNo !== undefined ? '#' + match.buyerOrderNo : '-'}</td>
+                        <td>${match.time || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
+        }
+
+        // 匯出修改後的 JSON 檔案功能
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            if (!currentAppData) return;
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentAppData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `${currentAppData.groupName || '代購資料'}_updated.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        });
+    </script>
 </body>
 </html>
