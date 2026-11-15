@@ -3,279 +3,519 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>PikaBuyer 代購喊單小幫手</title>
-<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<title>PikaBuyer 買買清單</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--maca-yellow:#FFF2CC;--pika-brown:#5C4033;--bg-color:#FEF9EF;--suica-green:#CAE9E0;--cash-pink:#FFC8DD;--btn-active:#F3A05F;}
-*{font-family:'Zen Maru Gothic',sans-serif!important;box-sizing:border-box;}
-body{background:var(--bg-color);color:var(--pika-brown);margin:0;padding-bottom:90px;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
-.top-bar{background:#fff;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--maca-yellow);position:sticky;top:0;z-index:1000;width:100%;max-width:420px;}
-.user-info{font-family:'Mochiy Pop One',sans-serif!important;color:#E67E22;font-size:.95rem;}
-.pika-header{font-family:'Mochiy Pop One',sans-serif!important;font-size:1.6rem;color:var(--btn-active);text-align:center;margin:15px 0;}
-.view-section{width:100%;max-width:420px;display:none;padding:0 10px;}
-.active{display:block;}
-.panel{background:#fff;padding:15px;border-radius:25px;border:3px solid var(--maca-yellow);margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.05);}
-input,textarea{width:100%;padding:10px;margin:6px 0;border:2px solid #eee;border-radius:12px;font-size:0.95rem;}
-.btn-main{width:100%;padding:12px;background:var(--btn-active);border-radius:20px;margin-top:10px;border:none;color:white;font-weight:bold;cursor:pointer;font-size:1rem;font-family:'Mochiy Pop One',sans-serif!important;}
-.btn-outline{width:100%;padding:10px;background:#fff;border:2px solid #eee;border-radius:15px;margin-top:8px;cursor:pointer;font-size:0.85rem;color:#666;font-weight:bold;}
-.toast-msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.75);color:#fff;padding:12px 24px;border-radius:50px;font-size:0.95rem;z-index:9999;display:none;font-weight:bold;box-shadow:0 4px 15px rgba(0,0,0,0.25);animation:toastFadeIn 0.2s ease-out;}
-@keyframes toastFadeIn{from{opacity:0;transform:translate(-50%,-40%);}to{opacity:1;transform:translate(-50%,-50%);}}
-.buyer-card{background:#fff;border-radius:20px;padding:12px 14px;margin-bottom:12px;border:2px solid var(--maca-yellow);box-shadow:0 3px 8px rgba(0,0,0,0.04);}
-.buyer-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding-bottom:6px;border-bottom:1px solid #f7f0e8;}
-.buyer-name{font-family:'Mochiy Pop One',sans-serif!important;font-size:1.05rem;color:var(--pika-brown);}
-.buyer-badge{background:var(--maca-yellow);padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:bold;color:#A07855;}
-.buyer-body{display:none;padding-top:8px;}
-.open .buyer-body{display:block;}
-.item-row-buyer{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #f4efe6;font-size:0.9rem;}
-.total-summary-banner{background:#fff;padding:15px;border-radius:20px;border:3px solid var(--btn-active);margin-bottom:15px;text-align:center;font-weight:bold;font-size:1.1rem;}
-.bottom-nav{position:fixed;bottom:0;width:100%;max-width:420px;background:#fff;display:flex;justify-content:space-around;padding:10px 10px calc(10px + env(safe-area-inset-bottom));border-top:3px solid var(--maca-yellow);z-index:1000;}
-.nav-item{font-size:.75rem;cursor:pointer;text-align:center;color:#888;flex:1;}
-.nav-item.active{color:var(--btn-active);font-weight:700;}
+@font-face {
+  font-family: 'jf-openhuninn';
+  src: url('https://cdn.jsdelivr.net/gh/justfont/open-huninn-font@master/font/jf-openhuninn-2.0.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+:root {
+  --maca-yellow: #FDF0C2;
+  --card-header: #FDEEB8;
+  --pika-brown: #4A3728;
+  --bg-color: #FEFBF3;
+  --btn-active: #F2A359;
+  --btn-green: #CAE9E0;
+}
+* {
+  font-family: 'jf-openhuninn', 'Zen Maru Gothic', 'PingFang TC', 'Microsoft JhengHei', sans-serif !important;
+  box-sizing: border-box;
+  letter-spacing: 0.03em;
+}
+body {
+  background: var(--bg-color);
+  color: var(--pika-brown);
+  margin: 0;
+  padding-bottom: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+.top-bar {
+  background: #fff;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--maca-yellow);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  max-width: 420px;
+}
+.user-info {
+  color: #E67E22;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.pika-header {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--btn-active);
+  text-align: center;
+  margin: 18px 0 14px;
+}
+.view-section {
+  width: 100%;
+  max-width: 420px;
+  display: none;
+  padding: 0 12px;
+}
+.active {
+  display: block;
+}
+.panel {
+  background: #fff;
+  padding: 18px 16px;
+  border-radius: 22px;
+  border: 2.5px solid var(--maca-yellow);
+  margin-bottom: 15px;
+  box-shadow: 0 4px 12px rgba(92, 64, 51, 0.04);
+}
+input {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 6px 0;
+  border: 2px solid #EFEAE1;
+  border-radius: 14px;
+  font-size: 0.98rem;
+  color: var(--pika-brown);
+  background: #FFFEFA;
+  outline: none;
+}
+input:focus {
+  border-color: var(--btn-active);
+  background: #fff;
+}
+.btn-main {
+  width: 100%;
+  padding: 13px;
+  background: var(--btn-active);
+  border-radius: 18px;
+  margin-top: 12px;
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1.02rem;
+}
+.btn-outline {
+  width: 100%;
+  padding: 11px;
+  background: #FFF9E8;
+  border: 1.5px solid #F5DFA3;
+  border-radius: 14px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--pika-brown);
+  font-weight: 700;
+}
+.toast-msg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(74, 55, 40, 0.85);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  z-index: 9999;
+  display: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* 買家卡片樣式（參考圖風格） */
+.buyer-card {
+  background: #fff;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  border: 2px solid var(--maca-yellow);
+  box-shadow: 0 3px 10px rgba(92, 64, 51, 0.04);
+  overflow: hidden;
+}
+.buyer-header {
+  background: var(--card-header);
+  padding: 13px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.buyer-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.buyer-name {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--pika-brown);
+  word-break: break-all;
+}
+.buyer-count {
+  background: #fff;
+  color: #D9822B;
+  font-size: 0.78rem;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.mini-btn {
+  background: #fff;
+  border: 1.5px solid #EBD9A8;
+  border-radius: 10px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  color: var(--pika-brown);
+  cursor: pointer;
+  font-weight: 700;
+}
+.buyer-body {
+  display: none;
+  padding: 6px 15px 10px;
+  background: #fff;
+}
+.open .buyer-body {
+  display: block;
+}
+.item-row-buyer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 2px;
+  border-bottom: 1px solid #F5F1E8;
+  font-size: 1rem;
+}
+.item-row-buyer:last-child {
+  border-bottom: none;
+}
+.item-text {
+  color: var(--pika-brown);
+  font-weight: 500;
+  word-break: break-all;
+  padding-right: 10px;
+}
+.del-x {
+  color: #C4B9AE;
+  cursor: pointer;
+  font-size: 1.05rem;
+  padding: 4px 6px;
+  flex-shrink: 0;
+}
+.del-x:hover {
+  color: #E74C3C;
+}
+
+/* 底部導覽列 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+  border-top: 2.5px solid var(--maca-yellow);
+  z-index: 1000;
+}
+.nav-item {
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: center;
+  color: #9A8C80;
+  flex: 1;
+  font-weight: 700;
+}
+.nav-item div {
+  font-size: 1.25rem;
+  margin-bottom: 2px;
+}
+.nav-item.active {
+  color: var(--btn-active);
+}
+.empty-tip {
+  text-align: center;
+  color: #A89B8E;
+  padding: 36px 15px;
+  font-size: 0.95rem;
+}
 </style>
 </head>
 <body>
 
-<div id="toastMessage" class="toast-msg">✨ 記錄成功！</div>
+<div id="toastMessage" class="toast-msg">登記成功</div>
 
 <div id="appInterface" style="width:100%;max-width:420px">
   <div class="top-bar">
-    <div class="user-info">PikaBuyer 🛒</div>
+    <div class="user-info">PikaBuyer 登記簿</div>
     <div style="display:flex;align-items:center;gap:6px;">
-      <span style="font-size:0.7rem;color:#A08C7D;font-weight:bold;" id="versionText">v2.0</span>
-      <span style="font-size:1.4rem">🐾</span>
+      <span style="font-size:0.75rem;color:#A08C7D;">v3.0</span>
     </div>
   </div>
 
   <!-- 分頁 1：輸入 -->
   <div id="inputView" class="view-section active">
-    <h2 class="pika-header">快速喊單輸入</h2>
+    <h2 class="pika-header">登記喊單</h2>
     <div class="panel">
-      <input type="text" id="buyerName" placeholder="👤 買家名字 (例: 小皮卡)">
-      <input type="text" id="itemName" placeholder="🛍️ 商品名稱 (例: 盲盒 A款)">
-      <input type="number" id="itemPrice" placeholder="💰 金額 (可不填或填數字)">
-      <button class="btn-main" onclick="addOrder()">✨ 新增喊單</button>
-      <button class="btn-outline" onclick="quickFillBuyer()" style="margin-top:10px;background:#FFF9F0;">🐾 帶入上一位買家名字繼續喊</button>
+      <input type="text" id="buyerName" placeholder="買家名字">
+      <input type="text" id="itemName" placeholder="商品名稱" onkeydown="if(event.key==='Enter') addOrder()">
+      <button class="btn-main" onclick="addOrder()">新增登記</button>
+      <button class="btn-outline" onclick="quickFillBuyer()">帶入上一位買家繼續新增</button>
     </div>
   </div>
 
-  <!-- 分頁 2：總覽 -->
-  <div id="summaryView" class="view-section">
-    <h2 class="pika-header">代購總覽統計</h2>
-    <div class="total-summary-banner" id="totalBanner">
-      總買家數: 0位<br>總商品數: 0件<br>總金額: $0
-    </div>
-    <button class="btn-main" onclick="exportAllText()" style="background:var(--suica-green);color:var(--pika-brown);">📋 一鍵複製對帳格式</button>
-  </div>
-
-  <!-- 分頁 3：清單與查詢 -->
+  <!-- 分頁 2：清單 -->
   <div id="listView" class="view-section">
-    <h2 class="pika-header">買家喊單清單</h2>
-    <div style="margin-bottom:12px;">
-      <input type="text" id="filterKeyword" placeholder="🔍 輸入買家名字或商品任一字搜尋..." oninput="renderOrders()" style="margin:0;padding:10px;font-size:0.9rem;">
+    <h2 class="pika-header">買買清單</h2>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+      <button class="mini-btn" onclick="exportAllText()" style="background:var(--btn-green);border:none;padding:7px 12px;">複製全部清單</button>
     </div>
     <div id="buyerListContainer"></div>
   </div>
 
-  <!-- 底部導覽列 -->
+  <!-- 分頁 3：搜尋 -->
+  <div id="searchView" class="view-section">
+    <h2 class="pika-header">查詢喊單</h2>
+    <div class="panel" style="padding:12px;">
+      <input type="text" id="filterKeyword" placeholder="輸入買家名字或商品任一字..." oninput="renderSearch()" style="margin:0;">
+    </div>
+    <div id="searchResultContainer"></div>
+  </div>
+
+  <!-- 底部三個分頁導覽列 -->
   <nav class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('input',this)"><div>📥</div><span>輸入</span></div>
-    <div class="nav-item" onclick="switchTab('summary',this)"><div>📊</div><span>總覽</span></div>
+    <div class="nav-item active" onclick="switchTab('input',this)"><div>＋</div><span>輸入</span></div>
     <div class="nav-item" onclick="switchTab('list',this)"><div>📋</div><span>清單</span></div>
+    <div class="nav-item" onclick="switchTab('search',this)"><div>🔍</div><span>搜尋</span></div>
   </nav>
 </div>
 
 <script>
-let buyersData = JSON.parse(localStorage.getItem('pika_buyers_v2')) || {};
+let buyersData = JSON.parse(localStorage.getItem('pika_buyers_v3')) || {};
 let openedBuyers = new Set();
 let lastBuyerName = "";
 
-function showToast(msg="✨ 記錄成功！"){
+function showToast(msg = "登記成功") {
   const t = document.getElementById('toastMessage');
   t.innerText = msg;
-  t.style.display='block';
-  setTimeout(()=>{t.style.display='none';},1500);
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 1400);
 }
 
-function switchTab(tabName, el){
+function switchTab(tabName, el) {
   document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   
   document.getElementById(tabName + 'View').classList.add('active');
   el.classList.add('active');
   
-  if(tabName === 'summary' || tabName === 'list'){
-    renderOrders();
+  if (tabName === 'list') {
+    renderList();
+  } else if (tabName === 'search') {
+    renderSearch();
+    setTimeout(() => document.getElementById('filterKeyword').focus(), 100);
   }
 }
 
-function quickFillBuyer(){
-  if(lastBuyerName){
+function quickFillBuyer() {
+  if (lastBuyerName) {
     document.getElementById('buyerName').value = lastBuyerName;
     document.getElementById('itemName').focus();
-    showToast(`🐾 已帶入買家：${lastBuyerName}`);
+    showToast(`已帶入：${lastBuyerName}`);
   } else {
-    alert("尚無上一筆買家紀錄！");
+    alert("目前還沒有上一位買家紀錄");
   }
 }
 
-function addOrder(){
+function addOrder() {
   const nameInput = document.getElementById('buyerName');
   const itemInput = document.getElementById('itemName');
-  const priceInput = document.getElementById('itemPrice');
   
   const buyer = nameInput.value.trim();
   const item = itemInput.value.trim();
-  const price = parseInt(priceInput.value) || 0;
 
-  if(!buyer) return alert("請輸入買家名字！");
-  if(!item) return alert("請輸入商品名稱！");
+  if (!buyer) return alert("請輸入買家名字！");
+  if (!item) return alert("請輸入商品名稱！");
 
   lastBuyerName = buyer;
 
-  if(!buyersData[buyer]){
+  if (!buyersData[buyer]) {
     buyersData[buyer] = [];
-    openedBuyers.add(buyer);
   }
+  openedBuyers.add(buyer);
 
   buyersData[buyer].push({
     id: Date.now() + Math.random(),
-    name: item,
-    price: price
+    name: item
   });
 
   itemInput.value = "";
-  priceInput.value = "";
   itemInput.focus();
 
-  syncAndRender();
-  showToast("✨ 喊單新增成功！");
+  saveData();
+  showToast(`已登記：${buyer}`);
 }
 
-function syncAndRender(){
-  localStorage.setItem('pika_buyers_v2', JSON.stringify(buyersData));
+function saveData() {
+  localStorage.setItem('pika_buyers_v3', JSON.stringify(buyersData));
 }
 
-function toggleBuyer(buyerName, el){
-  if(openedBuyers.has(buyerName)){
+function toggleBuyer(buyerName, cardEl) {
+  if (openedBuyers.has(buyerName)) {
     openedBuyers.delete(buyerName);
-    el.classList.remove('open');
+    cardEl.classList.remove('open');
   } else {
     openedBuyers.add(buyerName);
-    el.classList.add('open');
+    cardEl.classList.add('open');
   }
 }
 
-function deleteItem(buyerName, itemId){
-  if(confirm("確定刪除這項商品？")){
+function deleteItem(buyerName, itemId, mode) {
+  if (confirm("確定刪除這項商品？")) {
     buyersData[buyerName] = buyersData[buyerName].filter(i => i.id !== itemId);
-    if(buyersData[buyerName].length === 0){
+    if (buyersData[buyerName].length === 0) {
       delete buyersData[buyerName];
       openedBuyers.delete(buyerName);
     }
-    syncAndRender();
-    renderOrders();
+    saveData();
+    if (mode === 'search') renderSearch();
+    else renderList();
   }
 }
 
-function deleteBuyerGroup(buyerName){
-  if(confirm(`確定要刪除買家「${buyerName}」及其所有商品嗎？`)){
+function deleteBuyerGroup(buyerName, mode) {
+  if (confirm(`確定要刪除「${buyerName}」的所有登記嗎？`)) {
     delete buyersData[buyerName];
     openedBuyers.delete(buyerName);
-    syncAndRender();
-    renderOrders();
+    saveData();
+    if (mode === 'search') renderSearch();
+    else renderList();
   }
 }
 
-function exportAllText(){
-  let text = "🛒 【PikaBuyer 代購明細清單】\n";
-  let grandTotal = 0;
-  
-  Object.entries(buyersData).forEach(([buyer, items]) => {
-    text += `\n👤 買家：${buyer}\n`;
-    let subTotal = 0;
+function copySingleBuyer(buyerName) {
+  const items = buyersData[buyerName] || [];
+  let text = `${buyerName}：\n`;
+  items.forEach((i, idx) => {
+    text += `${idx + 1}. ${i.name}\n`;
+  });
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    showToast(`已複製 ${buyerName} 的清單`);
+  });
+}
+
+function exportAllText() {
+  const entries = Object.entries(buyersData);
+  if (entries.length === 0) return alert("目前清單是空的");
+  let text = "【買買清單】\n";
+  entries.forEach(([buyer, items]) => {
+    text += `\n${buyer}：\n`;
     items.forEach((i, idx) => {
-      text += `  ${idx+1}. ${i.name} ${i.price > 0 ? '($'+i.price+')':''}\n`;
-      subTotal += i.price;
+      text += `  ${idx + 1}. ${i.name}\n`;
     });
-    if(subTotal > 0){
-      text += `  💰 小計：$${subTotal}\n`;
-      grandTotal += subTotal;
+  });
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    showToast("已複製全部清單");
+  });
+}
+
+function createBuyerCard(buyer, items, isOpen, mode) {
+  const card = document.createElement('div');
+  card.className = `buyer-card ${isOpen ? 'open' : ''}`;
+  
+  const itemsHtml = items.map(i => `
+    <div class="item-row-buyer">
+      <span class="item-text">${i.name}</span>
+      <span class="del-x" onclick="deleteItem('${buyer.replace(/'/g, "\\'")}', ${i.id}, '${mode}')">✕</span>
+    </div>
+  `).join('');
+
+  const safeBuyer = buyer.replace(/'/g, "\\'");
+
+  card.innerHTML = `
+    <div class="buyer-header" onclick="toggleBuyer('${safeBuyer}', this.parentElement)">
+      <div class="buyer-title-wrap">
+        <span class="buyer-name">${buyer}</span>
+        <span class="buyer-count">${items.length} 件</span>
+      </div>
+      <div class="header-actions" onclick="event.stopPropagation()">
+        <button class="mini-btn" onclick="copySingleBuyer('${safeBuyer}')">複製</button>
+        <button class="mini-btn" onclick="deleteBuyerGroup('${safeBuyer}', '${mode}')" style="color:#D9534F;">刪除</button>
+      </div>
+    </div>
+    <div class="buyer-body">
+      ${itemsHtml}
+    </div>
+  `;
+  return card;
+}
+
+function renderList() {
+  const container = document.getElementById('buyerListContainer');
+  container.innerHTML = "";
+  const entries = Object.entries(buyersData);
+  
+  if (entries.length === 0) {
+    container.innerHTML = `<div class="empty-tip">目前還沒有任何登記紀錄</div>`;
+    return;
+  }
+
+  entries.forEach(([buyer, items]) => {
+    const isOpen = openedBuyers.has(buyer);
+    container.appendChild(createBuyerCard(buyer, items, isOpen, 'list'));
+  });
+}
+
+function renderSearch() {
+  const container = document.getElementById('searchResultContainer');
+  container.innerHTML = "";
+  const keyword = (document.getElementById('filterKeyword').value || "").toLowerCase().trim();
+
+  if (!keyword) {
+    container.innerHTML = `<div class="empty-tip">請在上方輸入買家名字或商品任一字進行查詢</div>`;
+    return;
+  }
+
+  const entries = Object.entries(buyersData);
+  let matchCount = 0;
+
+  entries.forEach(([buyer, items]) => {
+    const matchBuyer = buyer.toLowerCase().includes(keyword);
+    const matchedItems = items.filter(i => i.name.toLowerCase().includes(keyword));
+
+    if (matchBuyer) {
+      matchCount++;
+      container.appendChild(createBuyerCard(buyer, items, true, 'search'));
+    } else if (matchedItems.length > 0) {
+      matchCount++;
+      container.appendChild(createBuyerCard(buyer, matchedItems, true, 'search'));
     }
   });
 
-  if(grandTotal > 0){
-    text += `\n🌟 總金額合庫：$${grandTotal}`;
+  if (matchCount === 0) {
+    container.innerHTML = `<div class="empty-tip">找不到包含「${keyword}」的買家或商品</div>`;
   }
-
-  navigator.clipboard.writeText(text).then(() => {
-    showToast("📋 已複製全部對帳清單！");
-  }).catch(err => {
-    alert("複製失敗，請手動複製");
-  });
 }
 
-function renderOrders(){
-  const container = document.getElementById('buyerListContainer');
-  container.innerHTML = "";
-  
-  const keyword = (document.getElementById('filterKeyword').value || "").toLowerCase().trim();
-  
-  let totalBuyers = 0;
-  let totalItems = 0;
-  let grandTotalAmount = 0;
-
-  const entries = Object.entries(buyersData);
-  
-  entries.forEach(([buyer, items]) => {
-    let subTotal = items.reduce((sum, i) => sum + i.price, 0);
-    totalBuyers++;
-    totalItems += items.length;
-    grandTotalAmount += subTotal;
-
-    // 關鍵字篩選（符合買家名字或任一商品名稱）
-    const matchBuyer = buyer.toLowerCase().includes(keyword);
-    const matchItem = items.some(i => i.name.toLowerCase().includes(keyword));
-    if(keyword && !matchBuyer && !matchItem) return;
-
-    let isOpen = keyword !== "" || openedBuyers.has(buyer);
-
-    const card = document.createElement('div');
-    card.className = `buyer-card ${isOpen ? 'open' : ''}`;
-    
-    let itemsHtml = items.map(i => `
-      <div class="item-row-buyer">
-        <span>• ${i.name} ${i.price > 0 ? '<b style="color:#E05A47;">$'+i.price+'</b>':''}</span>
-        <span onclick="deleteItem('${buyer}', ${i.id})" style="color:#ccc;cursor:pointer;font-weight:bold;padding:0 6px;">✕</span>
-      </div>
-    `).join('');
-
-    card.innerHTML = `
-      <div class="buyer-header" onclick="toggleBuyer('${buyer}', this.parentElement)">
-        <div>
-          <span class="buyer-name">👤 ${buyer}</span>
-          <span class="buyer-badge">${items.length}件 ${subTotal > 0 ? '($'+subTotal+')':''}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span onclick="event.stopPropagation(); deleteBuyerGroup('${buyer}')" style="color:#e74c3c;font-size:0.8rem;cursor:pointer;" title="刪除買家">🗑️</span>
-          <span style="font-size:0.8rem;color:#A07855;">▾</span>
-        </div>
-      </div>
-      <div class="buyer-body">
-        ${itemsHtml}
-      </div>
-    `;
-    container.appendChild(card);
-  });
-
-  if(container.innerHTML === ""){
-    container.innerHTML = `<div style="text-align:center;color:#999;padding:30px;font-size:0.9rem;">找不到符合的買家或商品唷！🐾</div>`;
-  }
-
-  document.getElementById('totalBanner').innerHTML = `總買家數: ${totalBuyers}位<br>總商品數: ${totalItems}件<br>總金額: $${grandTotalAmount.toLocaleString()}`;
-}
-
-window.onload = function(){
-  renderOrders();
+window.onload = function() {
+  renderList();
 };
 </script>
 
