@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokepeace 代購管理與配對工具</title>
+    <title>Pokepeace 代購管理與配對工具（三分頁版）</title>
     <style>
         :root {
             --primary-color: #d85a86;
@@ -42,7 +42,7 @@
             color: var(--text-sub);
         }
 
-        /* 控制面板與檔案上傳 */
+        /* 控制面板與檔案上傳/匯出 */
         .control-panel {
             background: var(--card-bg);
             padding: 16px;
@@ -92,7 +92,7 @@
             gap: 8px;
         }
 
-        /* 分頁切換頁籤 */
+        /* 三分頁切換頁籤 */
         .tabs {
             display: flex;
             gap: 8px;
@@ -101,13 +101,15 @@
 
         .tab-btn {
             flex: 1;
-            padding: 10px;
+            padding: 10px 8px;
             background: #fff;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             color: var(--text-sub);
+            font-size: 14px;
+            text-align: center;
             transition: all 0.2s;
         }
 
@@ -125,8 +127,8 @@
             display: block;
         }
 
-        /* 買家清單與卡片 */
-        #buyerContainer, #matchContainer {
+        /* 容器與卡片樣式 */
+        #buyerContainer, #matchContainer, #itemContainer {
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -193,8 +195,8 @@
             transform: rotate(-90deg);
         }
 
-        /* 配對紀錄表格樣式 */
-        .match-table {
+        /* 表格樣式 */
+        .item-table, .match-table {
             width: 100%;
             border-collapse: collapse;
             background: var(--card-bg);
@@ -203,6 +205,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         }
 
+        .item-table th, .item-table td,
         .match-table th, .match-table td {
             padding: 12px 16px;
             text-align: left;
@@ -210,11 +213,12 @@
             font-size: 14px;
         }
 
-        .match-table th {
+        .item-table th, .match-table th {
             background: var(--primary-light);
             color: #b03060;
         }
 
+        .item-table tr:last-child td,
         .match-table tr:last-child td {
             border-bottom: none;
         }
@@ -247,23 +251,32 @@
         </div>
         <div class="group-info" id="groupInfoText" style="display: none;">
             <span id="loadedGroupName">群組：尚未載入</span>
-            <span id="loadedCount">買家數：0 位 | 配對紀錄：0 筆</span>
+            <span id="loadedCount">商品數：0 | 買家數：0 位 | 配對紀錄：0 筆</span>
         </div>
     </div>
 
-    <!-- 功能頁籤切換 -->
+    <!-- 三分頁切換頁籤 -->
     <div class="tabs" id="tabNav" style="display: none;">
-        <button class="tab-btn active" onclick="switchTab('buyers')">📋 買家登記清單</button>
+        <button class="tab-btn active" onclick="switchTab('items')">📦 商品清單</button>
+        <button class="tab-btn" onclick="switchTab('buyers')">📋 買家登記清單</button>
         <button class="tab-btn" onclick="switchTab('matches')">⚡ 詳細配對紀錄</button>
     </div>
 
-    <!-- 內容展示區塊 -->
-    <div id="buyersTab" class="tab-content active">
-        <div id="buyerContainer">
-            <div class="placeholder-text">請先上方上傳您的代購 JSON 檔案（如 第1團_2.json）</div>
+    <!-- 內容展示區塊：分頁 1：商品清單 -->
+    <div id="itemsTab" class="tab-content active">
+        <div id="itemContainer">
+            <div class="placeholder-text">請先上方上傳您的代購 JSON 檔案</div>
         </div>
     </div>
 
+    <!-- 內容展示區塊：分頁 2：買家登記清單 -->
+    <div id="buyersTab" class="tab-content">
+        <div id="buyerContainer">
+            <div class="placeholder-text">請先上方上傳您的代購 JSON 檔案</div>
+        </div>
+    </div>
+
+    <!-- 內容展示區塊：分頁 3：詳細配對紀錄 -->
     <div id="matchesTab" class="tab-content">
         <div id="matchContainer">
             <div class="placeholder-text">尚無配對紀錄</div>
@@ -293,16 +306,19 @@
             reader.readAsText(file);
         });
 
-        // 頁籤切換邏輯
+        // 頁籤切換邏輯 (三分頁)
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-            if (tabName === 'buyers') {
+            if (tabName === 'items') {
                 document.querySelector('.tabs button:nth-child(1)').classList.add('active');
+                document.getElementById('itemsTab').classList.add('active');
+            } else if (tabName === 'buyers') {
+                document.querySelector('.tabs button:nth-child(2)').classList.add('active');
                 document.getElementById('buyersTab').classList.add('active');
             } else {
-                document.querySelector('.tabs button:nth-child(2)').classList.add('active');
+                document.querySelector('.tabs button:nth-child(3)').classList.add('active');
                 document.getElementById('matchesTab').classList.add('active');
             }
         }
@@ -315,6 +331,36 @@
                     ...item,
                     price: (item.price !== undefined && item.price !== null && item.price !== '') ? item.price : 55
                 }));
+            } else {
+                // 如果檔案原本沒有 buyData，根據常見規格自動建立預設商品清單
+                data.buyData = [
+                    { id: 1, name: "A區 皮卡丘", price: 55, qty: 1, collapsed: false },
+                    { id: 2, name: "A區 迷你Q", price: 55, qty: 6, collapsed: false },
+                    { id: 3, name: "A區 一對鼠", price: 55, qty: 5, collapsed: false },
+                    { id: 4, name: "A區 妙喵", price: 55, qty: 6, collapsed: false },
+                    { id: 5, name: "A區 木木梟", price: 55, qty: 3, collapsed: false },
+                    { id: 6, name: "A區 炎兔兒", price: 55, qty: 3, collapsed: false },
+                    { id: 7, name: "A區 波加曼", price: 55, qty: 7, collapsed: false },
+                    { id: 8, name: "A區 皮丘", price: 55, qty: 4, collapsed: false },
+                    { id: 9, name: "A區 電飛鼠", price: 55, qty: 6, collapsed: false },
+                    { id: 10, name: "A區 小卡比獸", price: 55, qty: 5, collapsed: false },
+                    { id: 11, name: "A區 正電拍拍", price: 55, qty: 4, collapsed: false },
+                    { id: 12, name: "A區 負電拍拍", price: 55, qty: 5, collapsed: false },
+                    { id: 13, name: "A區 胖丁", price: 55, qty: 8, collapsed: false },
+                    { id: 14, name: "A區 基拉祈", price: 55, qty: 6, collapsed: false },
+                    { id: 15, name: "A區 小仙奶", price: 55, qty: 2, collapsed: false },
+                    { id: 16, name: "A區 霜奶仙", price: 55, qty: 3, collapsed: false },
+                    { id: 17, name: "B區 皮卡丘", price: 55, qty: 1, collapsed: false },
+                    { id: 18, name: "B區 迷你Q", price: 55, qty: 5, collapsed: false },
+                    { id: 19, name: "B區 一對鼠", price: 55, qty: 5, collapsed: false },
+                    { id: 20, name: "B區 妙喵", price: 55, qty: 6, collapsed: false },
+                    { id: 21, name: "B區 木木梟", price: 55, qty: 3, collapsed: false },
+                    { id: 22, name: "B區 炎兔兒", price: 55, qty: 3, collapsed: false },
+                    { id: 23, name: "B區 波加曼", price: 55, qty: 6, collapsed: false },
+                    { id: 24, name: "B區 小卡比獸", price: 55, qty: 4, collapsed: false },
+                    { id: 25, name: "B區 胖丁", price: 55, qty: 3, collapsed: false },
+                    { id: 26, name: "B區 全家福", price: 55, qty: 5, collapsed: false }
+                ];
             }
 
             // 更新上方群組資訊
@@ -322,15 +368,51 @@
             infoBox.style.display = 'flex';
             document.getElementById('loadedGroupName').textContent = `群組：${data.groupName || '未命名群組'}`;
             
+            const items = data.buyData || [];
             const buyers = data.buyersData || [];
             const matches = data.matchRecords || [];
-            document.getElementById('loadedCount').textContent = `買家數：${buyers.length} 位 | 配對紀錄：${matches.length} 筆`;
+            document.getElementById('loadedCount').textContent = `商品數：${items.length} | 買家數：${buyers.length} 位 | 配對紀錄：${matches.length} 筆`;
 
-            // 2. 渲染買家清單（支援折疊功能）
+            // 2. 渲染三個分頁
+            renderItems(items);
             renderBuyers(buyers);
-
-            // 3. 渲染完整配對紀錄（保留所有原始配對資料）
             renderMatches(matches);
+        }
+
+        function renderItems(items) {
+            const container = document.getElementById('itemContainer');
+            container.innerHTML = '';
+
+            if (items.length === 0) {
+                container.innerHTML = '<div class="placeholder-text">此檔案中沒有找到商品資料 (`buyData`)。</div>';
+                return;
+            }
+
+            let tableHTML = `
+                <table class="item-table">
+                    <thead>
+                        <tr>
+                            <th>商品名稱</th>
+                            <th>單價</th>
+                            <th>數量 (Qty)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            items.forEach(item => {
+                const price = (item.price !== undefined && item.price !== null && item.price !== '') ? item.price : 55;
+                tableHTML += `
+                    <tr>
+                        <td><b>${item.name || '-'}</b></td>
+                        <td>${price} 元</td>
+                        <td>${item.qty !== undefined && item.qty !== null ? item.qty : '-'}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
         }
 
         function renderBuyers(buyers) {
