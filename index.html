@@ -195,7 +195,7 @@ input:focus {
   display: block;
 }
 
-/* 商品列：左側名稱，右側按鈕群組 */
+/* 商品列：左側名稱，右側符號按鈕群組 */
 .item-row-buyer {
   display: flex;
   justify-content: space-between;
@@ -238,7 +238,7 @@ input:focus {
   word-break: break-all;
 }
 
-/* 右側按鈕區塊 */
+/* 右側符號按鈕區塊 */
 .status-actions {
   display: flex;
   gap: 4px;
@@ -246,8 +246,12 @@ input:focus {
   align-items: center;
 }
 .status-btn {
-  padding: 5px 8px;
-  font-size: 0.72rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
   border-radius: 8px;
   border: 1px solid #E5DFD5;
   background: rgba(255, 255, 255, 0.9);
@@ -255,10 +259,9 @@ input:focus {
   cursor: pointer;
   font-weight: 700;
   transition: all 0.15s ease;
-  white-space: nowrap;
 }
 .status-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 .status-btn.active-bought {
   background: #38A169;
@@ -278,6 +281,7 @@ input:focus {
 .status-btn.btn-reset {
   color: #8C7E72;
   background: #F9F7F3;
+  font-size: 0.75rem;
 }
 
 .del-x {
@@ -335,7 +339,7 @@ input:focus {
   <div class="top-bar">
     <div class="user-info">PikaBuyer 登記簿</div>
     <div style="display:flex;align-items:center;gap:6px;">
-      <span style="font-size:0.75rem;color:#A08C7D;">v3.2</span>
+      <span style="font-size:0.75rem;color:#A08C7D;">v3.3</span>
     </div>
   </div>
 
@@ -533,10 +537,10 @@ function createBuyerCard(buyer, items, isOpen, mode) {
           <span class="item-text">${i.name}</span>
         </div>
         <div class="status-actions">
-          <button class="status-btn ${st === 'bought' ? 'active-bought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'bought', '${mode}')">已買</button>
-          <button class="status-btn ${st === 'unbought' ? 'active-unbought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'unbought', '${mode}')">未買</button>
-          <button class="status-btn ${st === 'packed' ? 'active-packed' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'packed', '${mode}')">打包</button>
-          <button class="status-btn btn-reset" onclick="setItemStatus('${safeBuyer}', ${i.id}, '', '${mode}')">重製</button>
+          <button class="status-btn ${st === 'bought' ? 'active-bought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'bought', '${mode}')" title="已買到">✓</button>
+          <button class="status-btn ${st === 'unbought' ? 'active-unbought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'unbought', '${mode}')" title="未買到">✕</button>
+          <button class="status-btn ${st === 'packed' ? 'active-packed' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'packed', '${mode}')" title="已打包">📦</button>
+          <button class="status-btn btn-reset" onclick="setItemStatus('${safeBuyer}', ${i.id}, '', '${mode}')" title="重製">⟳</button>
         </div>
       </div>
     `;
