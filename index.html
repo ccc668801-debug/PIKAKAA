@@ -195,7 +195,7 @@ input:focus {
   display: block;
 }
 
-/* 商品列：左側名稱，右側符號按鈕群組 */
+/* 商品列：固定單行，名稱靠左並可適應截斷，按鈕固定右側 */
 .item-row-buyer {
   display: flex;
   justify-content: space-between;
@@ -206,7 +206,8 @@ input:focus {
   background: #fff;
   border: 1px solid #F5F1E8;
   transition: background-color 0.2s ease;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
 }
 .item-row-buyer:last-child {
   margin-bottom: 0;
@@ -230,15 +231,18 @@ input:focus {
   gap: 6px;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 .item-text {
   color: var(--pika-brown);
   font-weight: 700;
   font-size: 0.95rem;
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 右側符號按鈕區塊 */
+/* 右側符號按鈕區塊（固定不換行） */
 .status-actions {
   display: flex;
   gap: 4px;
@@ -259,6 +263,7 @@ input:focus {
   cursor: pointer;
   font-weight: 700;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 .status-btn:active {
   transform: scale(0.92);
@@ -339,7 +344,7 @@ input:focus {
   <div class="top-bar">
     <div class="user-info">PikaBuyer 登記簿</div>
     <div style="display:flex;align-items:center;gap:6px;">
-      <span style="font-size:0.75rem;color:#A08C7D;">v3.3</span>
+      <span style="font-size:0.75rem;color:#A08C7D;">v3.5</span>
     </div>
   </div>
 
@@ -382,7 +387,7 @@ input:focus {
 
 <script>
 let buyersData = JSON.parse(localStorage.getItem('pika_buyers_v3')) || {};
-let openedBuyers = new Set();
+let openedBuyers = new Set(); // 預設為空，新增時不自動加入
 let lastBuyerName = "";
 
 function showToast(msg = "登記成功") {
@@ -432,7 +437,8 @@ function addOrder() {
   if (!buyersData[buyer]) {
     buyersData[buyer] = [];
   }
-  openedBuyers.add(buyer);
+  
+  // 移除自動展開的設定 (不再把 buyer 加入 openedBuyers)，讓新登記維持收合狀態
 
   buyersData[buyer].push({
     id: Date.now() + Math.random(),
@@ -534,7 +540,7 @@ function createBuyerCard(buyer, items, isOpen, mode) {
       <div class="item-row-buyer ${rowClass}">
         <div class="item-left">
           <span class="del-x" onclick="deleteItem('${safeBuyer}', ${i.id}, '${mode}')">✕</span>
-          <span class="item-text">${i.name}</span>
+          <span class="item-text" title="${i.name}">${i.name}</span>
         </div>
         <div class="status-actions">
           <button class="status-btn ${st === 'bought' ? 'active-bought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'bought', '${mode}')" title="已買到">✓</button>
