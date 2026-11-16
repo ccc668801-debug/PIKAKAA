@@ -195,16 +195,18 @@ input:focus {
   display: block;
 }
 
-/* 商品列與狀態背景 */
+/* 商品列：左側名稱，右側按鈕群組 */
 .item-row-buyer {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   padding: 10px 10px;
   margin-bottom: 6px;
   border-radius: 12px;
   background: #fff;
   border: 1px solid #F5F1E8;
   transition: background-color 0.2s ease;
+  gap: 10px;
 }
 .item-row-buyer:last-child {
   margin-bottom: 0;
@@ -222,47 +224,38 @@ input:focus {
   border-color: #D8C4F2;
 }
 
-.item-top {
+.item-left {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  width: 100%;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
 }
 .item-text {
   color: var(--pika-brown);
   font-weight: 700;
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   word-break: break-all;
-  padding-right: 10px;
-}
-.del-x {
-  color: #B5A99E;
-  cursor: pointer;
-  font-size: 1.05rem;
-  padding: 2px 6px;
-  flex-shrink: 0;
-}
-.del-x:hover {
-  color: #E74C3C;
 }
 
-/* 狀態按鈕列 */
+/* 右側按鈕區塊 */
 .status-actions {
   display: flex;
-  gap: 6px;
-  margin-top: 8px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-shrink: 0;
+  align-items: center;
 }
 .status-btn {
-  padding: 4px 9px;
-  font-size: 0.76rem;
+  padding: 5px 8px;
+  font-size: 0.72rem;
   border-radius: 8px;
   border: 1px solid #E5DFD5;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--pika-brown);
   cursor: pointer;
   font-weight: 700;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 .status-btn:active {
   transform: scale(0.95);
@@ -285,6 +278,17 @@ input:focus {
 .status-btn.btn-reset {
   color: #8C7E72;
   background: #F9F7F3;
+}
+
+.del-x {
+  color: #B5A99E;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 4px;
+  flex-shrink: 0;
+}
+.del-x:hover {
+  color: #E74C3C;
 }
 
 /* 底部導覽列 */
@@ -331,7 +335,7 @@ input:focus {
   <div class="top-bar">
     <div class="user-info">PikaBuyer 登記簿</div>
     <div style="display:flex;align-items:center;gap:6px;">
-      <span style="font-size:0.75rem;color:#A08C7D;">v3.1</span>
+      <span style="font-size:0.75rem;color:#A08C7D;">v3.2</span>
     </div>
   </div>
 
@@ -429,7 +433,7 @@ function addOrder() {
   buyersData[buyer].push({
     id: Date.now() + Math.random(),
     name: item,
-    status: "" // 預設無狀態（白色背景）
+    status: ""
   });
 
   itemInput.value = "";
@@ -524,14 +528,14 @@ function createBuyerCard(buyer, items, isOpen, mode) {
     const rowClass = st ? `status-${st}` : '';
     return `
       <div class="item-row-buyer ${rowClass}">
-        <div class="item-top">
-          <span class="item-text">${i.name}</span>
+        <div class="item-left">
           <span class="del-x" onclick="deleteItem('${safeBuyer}', ${i.id}, '${mode}')">✕</span>
+          <span class="item-text">${i.name}</span>
         </div>
         <div class="status-actions">
-          <button class="status-btn ${st === 'bought' ? 'active-bought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'bought', '${mode}')">已買到</button>
-          <button class="status-btn ${st === 'unbought' ? 'active-unbought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'unbought', '${mode}')">未買到</button>
-          <button class="status-btn ${st === 'packed' ? 'active-packed' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'packed', '${mode}')">已打包</button>
+          <button class="status-btn ${st === 'bought' ? 'active-bought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'bought', '${mode}')">已買</button>
+          <button class="status-btn ${st === 'unbought' ? 'active-unbought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'unbought', '${mode}')">未買</button>
+          <button class="status-btn ${st === 'packed' ? 'active-packed' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'packed', '${mode}')">打包</button>
           <button class="status-btn btn-reset" onclick="setItemStatus('${safeBuyer}', ${i.id}, '', '${mode}')">重製</button>
         </div>
       </div>
