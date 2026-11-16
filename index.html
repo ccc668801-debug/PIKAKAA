@@ -195,7 +195,7 @@ input:focus {
   display: block;
 }
 
-/* 商品列：固定單行，名稱靠左並可適應截斷，按鈕固定右側 */
+/* 商品列：支援商品名稱與備註上下排列 */
 .item-row-buyer {
   display: flex;
   justify-content: space-between;
@@ -213,24 +213,31 @@ input:focus {
   margin-bottom: 0;
 }
 .item-row-buyer.status-bought {
-  background: #E2F5EB; /* 淺綠色 */
+  background: #E2F5EB;
   border-color: #BDE3CF;
 }
 .item-row-buyer.status-unbought {
-  background: #FDE8E8; /* 淡紅色 */
+  background: #FDE8E8;
   border-color: #F7C6C6;
 }
 .item-row-buyer.status-packed {
-  background: #EFE6FA; /* 淡紫色 */
+  background: #EFE6FA;
   border-color: #D8C4F2;
 }
 
 .item-left {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 2px;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+}
+.item-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
   overflow: hidden;
 }
 .item-text {
@@ -241,8 +248,16 @@ input:focus {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.item-note {
+  color: #8C7E72;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 20px;
+}
 
-/* 右側符號按鈕區塊（固定不換行） */
+/* 右側符號按鈕區塊 */
 .status-actions {
   display: flex;
   gap: 4px;
@@ -344,7 +359,7 @@ input:focus {
   <div class="top-bar">
     <div class="user-info">PikaBuyer 登記簿</div>
     <div style="display:flex;align-items:center;gap:6px;">
-      <span style="font-size:0.75rem;color:#A08C7D;">v3.5</span>
+      <span style="font-size:0.75rem;color:#A08C7D;">v3.6</span>
     </div>
   </div>
 
@@ -387,7 +402,7 @@ input:focus {
 
 <script>
 let buyersData = JSON.parse(localStorage.getItem('pika_buyers_v3')) || {};
-let openedBuyers = new Set(); // 預設為空，新增時不自動加入
+let openedBuyers = new Set();
 let lastBuyerName = "";
 
 function showToast(msg = "登記成功") {
@@ -437,12 +452,11 @@ function addOrder() {
   if (!buyersData[buyer]) {
     buyersData[buyer] = [];
   }
-  
-  // 移除自動展開的設定 (不再把 buyer 加入 openedBuyers)，讓新登記維持收合狀態
 
   buyersData[buyer].push({
     id: Date.now() + Math.random(),
     name: item,
+    note: "", // 預設無備註
     status: ""
   });
 
@@ -467,6 +481,30 @@ function setItemStatus(buyerName, itemId, newStatus, mode) {
     if (mode === 'search') renderSearch();
     else renderList();
   }
+}
+
+function editItem(buyerName, itemId, mode) {
+  const items = buyersData[buyerName];
+  if (!items) return;
+  const target = items.find(i => i.id === itemId);
+  if (!target) return;
+
+  const newName = prompt("修改商品名稱：", target.name);
+  if (newName === null) return; // 按取消
+
+  const trimmedName = newName.trim();
+  if (!trimmedName) return alert("商品名稱不能為空！");
+
+  const newNote = prompt("修改或新增備註（例如：尺寸、顏色、金額等）：", target.note || "");
+  if (newNote === null) return;
+
+  target.name = trimmedName;
+  target.note = newNote.trim();
+
+  saveData();
+  showToast("修改成功");
+  if (mode === 'search') renderSearch();
+  else renderList();
 }
 
 function toggleBuyer(buyerName, cardEl) {
@@ -506,7 +544,9 @@ function copySingleBuyer(buyerName) {
   const items = buyersData[buyerName] || [];
   let text = `${buyerName}：\n`;
   items.forEach((i, idx) => {
-    text += `${idx + 1}. ${i.name}\n`;
+    let line = `${idx + 1}. ${i.name}`;
+    if (i.note) line += ` (${i.note})`;
+    text += `${line}\n`;
   });
   navigator.clipboard.writeText(text.trim()).then(() => {
     showToast(`已複製 ${buyerName} 的清單`);
@@ -520,7 +560,9 @@ function exportAllText() {
   entries.forEach(([buyer, items]) => {
     text += `\n${buyer}：\n`;
     items.forEach((i, idx) => {
-      text += `  ${idx + 1}. ${i.name}\n`;
+      let line = `  ${idx + 1}. ${i.name}`;
+      if (i.note) line += ` (${i.note})`;
+      text += `${line}\n`;
     });
   });
   navigator.clipboard.writeText(text.trim()).then(() => {
@@ -536,11 +578,16 @@ function createBuyerCard(buyer, items, isOpen, mode) {
   const itemsHtml = items.map(i => {
     const st = i.status || '';
     const rowClass = st ? `status-${st}` : '';
+    const noteHtml = i.note ? `<div class="item-note">備註：${i.note}</div>` : '';
     return `
       <div class="item-row-buyer ${rowClass}">
         <div class="item-left">
-          <span class="del-x" onclick="deleteItem('${safeBuyer}', ${i.id}, '${mode}')">✕</span>
-          <span class="item-text" title="${i.name}">${i.name}</span>
+          <div class="item-name-wrap">
+            <span class="del-x" onclick="deleteItem('${safeBuyer}', ${i.id}, '${mode}')" title="刪除">✕</span>
+            <span class="status-btn" onclick="editItem('${safeBuyer}', ${i.id}, '${mode}')" title="編輯商品與備註" style="background:#FFF9E8;font-size:0.75rem;">✏️</span>
+            <span class="item-text" title="${i.name}">${i.name}</span>
+          </div>
+          ${noteHtml}
         </div>
         <div class="status-actions">
           <button class="status-btn ${st === 'bought' ? 'active-bought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'bought', '${mode}')" title="已買到">✓</button>
