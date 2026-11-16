@@ -131,7 +131,7 @@ input:focus {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* 買家卡片樣式（參考圖風格） */
+/* 買家卡片樣式 */
 .buyer-card {
   background: #fff;
   border-radius: 20px;
@@ -188,38 +188,103 @@ input:focus {
 }
 .buyer-body {
   display: none;
-  padding: 6px 15px 10px;
+  padding: 8px 10px 10px;
   background: #fff;
 }
 .open .buyer-body {
   display: block;
 }
+
+/* 商品列與狀態背景 */
 .item-row-buyer {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #F5F1E8;
+  transition: background-color 0.2s ease;
+}
+.item-row-buyer:last-child {
+  margin-bottom: 0;
+}
+.item-row-buyer.status-bought {
+  background: #E2F5EB; /* 淺綠色 */
+  border-color: #BDE3CF;
+}
+.item-row-buyer.status-unbought {
+  background: #FDE8E8; /* 淡紅色 */
+  border-color: #F7C6C6;
+}
+.item-row-buyer.status-packed {
+  background: #EFE6FA; /* 淡紫色 */
+  border-color: #D8C4F2;
+}
+
+.item-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 2px;
-  border-bottom: 1px solid #F5F1E8;
-  font-size: 1rem;
-}
-.item-row-buyer:last-child {
-  border-bottom: none;
+  width: 100%;
 }
 .item-text {
   color: var(--pika-brown);
-  font-weight: 500;
+  font-weight: 700;
+  font-size: 0.98rem;
   word-break: break-all;
   padding-right: 10px;
 }
 .del-x {
-  color: #C4B9AE;
+  color: #B5A99E;
   cursor: pointer;
   font-size: 1.05rem;
-  padding: 4px 6px;
+  padding: 2px 6px;
   flex-shrink: 0;
 }
 .del-x:hover {
   color: #E74C3C;
+}
+
+/* 狀態按鈕列 */
+.status-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.status-btn {
+  padding: 4px 9px;
+  font-size: 0.76rem;
+  border-radius: 8px;
+  border: 1px solid #E5DFD5;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--pika-brown);
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+.status-btn:active {
+  transform: scale(0.95);
+}
+.status-btn.active-bought {
+  background: #38A169;
+  color: #fff;
+  border-color: #38A169;
+}
+.status-btn.active-unbought {
+  background: #E53E3E;
+  color: #fff;
+  border-color: #E53E3E;
+}
+.status-btn.active-packed {
+  background: #805AD5;
+  color: #fff;
+  border-color: #805AD5;
+}
+.status-btn.btn-reset {
+  color: #8C7E72;
+  background: #F9F7F3;
 }
 
 /* 底部導覽列 */
@@ -266,7 +331,7 @@ input:focus {
   <div class="top-bar">
     <div class="user-info">PikaBuyer 登記簿</div>
     <div style="display:flex;align-items:center;gap:6px;">
-      <span style="font-size:0.75rem;color:#A08C7D;">v3.0</span>
+      <span style="font-size:0.75rem;color:#A08C7D;">v3.1</span>
     </div>
   </div>
 
@@ -363,7 +428,8 @@ function addOrder() {
 
   buyersData[buyer].push({
     id: Date.now() + Math.random(),
-    name: item
+    name: item,
+    status: "" // 預設無狀態（白色背景）
   });
 
   itemInput.value = "";
@@ -375,6 +441,18 @@ function addOrder() {
 
 function saveData() {
   localStorage.setItem('pika_buyers_v3', JSON.stringify(buyersData));
+}
+
+function setItemStatus(buyerName, itemId, newStatus, mode) {
+  const items = buyersData[buyerName];
+  if (!items) return;
+  const target = items.find(i => i.id === itemId);
+  if (target) {
+    target.status = newStatus;
+    saveData();
+    if (mode === 'search') renderSearch();
+    else renderList();
+  }
 }
 
 function toggleBuyer(buyerName, cardEl) {
@@ -439,15 +517,26 @@ function exportAllText() {
 function createBuyerCard(buyer, items, isOpen, mode) {
   const card = document.createElement('div');
   card.className = `buyer-card ${isOpen ? 'open' : ''}`;
-  
-  const itemsHtml = items.map(i => `
-    <div class="item-row-buyer">
-      <span class="item-text">${i.name}</span>
-      <span class="del-x" onclick="deleteItem('${buyer.replace(/'/g, "\\'")}', ${i.id}, '${mode}')">✕</span>
-    </div>
-  `).join('');
-
   const safeBuyer = buyer.replace(/'/g, "\\'");
+
+  const itemsHtml = items.map(i => {
+    const st = i.status || '';
+    const rowClass = st ? `status-${st}` : '';
+    return `
+      <div class="item-row-buyer ${rowClass}">
+        <div class="item-top">
+          <span class="item-text">${i.name}</span>
+          <span class="del-x" onclick="deleteItem('${safeBuyer}', ${i.id}, '${mode}')">✕</span>
+        </div>
+        <div class="status-actions">
+          <button class="status-btn ${st === 'bought' ? 'active-bought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'bought', '${mode}')">已買到</button>
+          <button class="status-btn ${st === 'unbought' ? 'active-unbought' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'unbought', '${mode}')">未買到</button>
+          <button class="status-btn ${st === 'packed' ? 'active-packed' : ''}" onclick="setItemStatus('${safeBuyer}', ${i.id}, 'packed', '${mode}')">已打包</button>
+          <button class="status-btn btn-reset" onclick="setItemStatus('${safeBuyer}', ${i.id}, '', '${mode}')">重製</button>
+        </div>
+      </div>
+    `;
+  }).join('');
 
   card.innerHTML = `
     <div class="buyer-header" onclick="toggleBuyer('${safeBuyer}', this.parentElement)">
