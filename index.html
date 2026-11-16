@@ -195,7 +195,7 @@ input:focus {
   display: block;
 }
 
-/* 商品列：支援商品名稱與備註上下排列 */
+/* 商品列 */
 .item-row-buyer {
   display: flex;
   justify-content: space-between;
@@ -359,7 +359,7 @@ input:focus {
   <div class="top-bar">
     <div class="user-info">PikaBuyer 登記簿</div>
     <div style="display:flex;align-items:center;gap:6px;">
-      <span style="font-size:0.75rem;color:#A08C7D;">v3.6</span>
+      <span style="font-size:0.75rem;color:#A08C7D;">v3.7</span>
     </div>
   </div>
 
@@ -368,7 +368,8 @@ input:focus {
     <h2 class="pika-header">登記喊單</h2>
     <div class="panel">
       <input type="text" id="buyerName" placeholder="買家名字">
-      <input type="text" id="itemName" placeholder="商品名稱" onkeydown="if(event.key==='Enter') addOrder()">
+      <input type="text" id="itemName" placeholder="商品名稱">
+      <input type="text" id="itemNote" placeholder="備註（例如：金額、尺寸、款式等，可不填）" onkeydown="if(event.key==='Enter') addOrder()">
       <button class="btn-main" onclick="addOrder()">新增登記</button>
       <button class="btn-outline" onclick="quickFillBuyer()">帶入上一位買家繼續新增</button>
     </div>
@@ -440,9 +441,11 @@ function quickFillBuyer() {
 function addOrder() {
   const nameInput = document.getElementById('buyerName');
   const itemInput = document.getElementById('itemName');
+  const noteInput = document.getElementById('itemNote');
   
   const buyer = nameInput.value.trim();
   const item = itemInput.value.trim();
+  const note = noteInput.value.trim();
 
   if (!buyer) return alert("請輸入買家名字！");
   if (!item) return alert("請輸入商品名稱！");
@@ -456,11 +459,12 @@ function addOrder() {
   buyersData[buyer].push({
     id: Date.now() + Math.random(),
     name: item,
-    note: "", // 預設無備註
+    note: note,
     status: ""
   });
 
   itemInput.value = "";
+  noteInput.value = "";
   itemInput.focus();
 
   saveData();
@@ -490,12 +494,12 @@ function editItem(buyerName, itemId, mode) {
   if (!target) return;
 
   const newName = prompt("修改商品名稱：", target.name);
-  if (newName === null) return; // 按取消
+  if (newName === null) return;
 
   const trimmedName = newName.trim();
   if (!trimmedName) return alert("商品名稱不能為空！");
 
-  const newNote = prompt("修改或新增備註（例如：尺寸、顏色、金額等）：", target.note || "");
+  const newNote = prompt("修改或新增備註：", target.note || "");
   if (newNote === null) return;
 
   target.name = trimmedName;
@@ -648,19 +652,22 @@ function renderSearch() {
 
   entries.forEach(([buyer, items]) => {
     const matchBuyer = buyer.toLowerCase().includes(keyword);
-    const matchedItems = items.filter(i => i.name.toLowerCase().includes(keyword));
+    const matchedItems = items.items ? items.items : items.filter(i => i.name.toLowerCase().includes(keyword) || (i.note && i.note.toLowerCase().includes(keyword)));
+
+    // 修正搜尋條件檢查
+    const matched = items.filter(i => i.name.toLowerCase().includes(keyword) || (i.note && i.note.toLowerCase().includes(keyword)));
 
     if (matchBuyer) {
       matchCount++;
       container.appendChild(createBuyerCard(buyer, items, true, 'search'));
-    } else if (matchedItems.length > 0) {
+    } else if (matched.length > 0) {
       matchCount++;
-      container.appendChild(createBuyerCard(buyer, matchedItems, true, 'search'));
+      container.appendChild(createBuyerCard(buyer, matched, true, 'search'));
     }
   });
 
   if (matchCount === 0) {
-    container.innerHTML = `<div class="empty-tip">找不到包含「${keyword}」的買家或商品</div>`;
+    container.innerHTML = `<div class="empty-tip">找不到包含「${keyword}」的買家或商品/備註</div>`;
   }
 }
 
